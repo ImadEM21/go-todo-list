@@ -1,21 +1,16 @@
 package todosRoutes
 
 import (
-	"context"
-	"log"
-	"net/http"
-
 	todosCtr "todo-list-api/controllers/todos"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func HandleTodosRequest(client mongo.Client, ctx context.Context) {
+func HandleTodosRequest() *mux.Router {
 	prefix := "/todos"
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc(prefix+"/", func(w http.ResponseWriter, r *http.Request) {
-		todosCtr.GetTodos(w, r, client, ctx)
-	}).Methods("GET")
-	log.Fatal(http.ListenAndServe(":3000", router))
+	router := mux.NewRouter().StrictSlash(false)
+	router.HandleFunc(prefix, todosCtr.GetTodos).Methods("GET")
+	router.HandleFunc(prefix+"/{id}", todosCtr.GetTodo).Methods("GET")
+	router.HandleFunc(prefix+"/", todosCtr.CreateTodo).Methods("POST")
+	return router
 }

@@ -2,11 +2,15 @@ package dbTodo
 
 import (
 	"context"
+	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Todo struct {
@@ -19,7 +23,33 @@ type Todo struct {
 	Completed   bool               `bson:"completed"`
 }
 
-func GetTodos(client mongo.Client, ctx context.Context) ([]*Todo, error) {
+func initDb() (mongo.Client, context.Context) {
+	var ctx = context.TODO()
+	envErr := godotenv.Load()
+	if envErr != nil {
+		log.Println("No .env file found")
+	}
+
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	if err != nil {
+		panic(err)
+	}
+	return *client, ctx
+}
+
+func GetTodos() ([]*Todo, error) {
+	client, ctx := initDb()
+	defer func() {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
 	var todos []*Todo
 	coll := client.Database("todos").Collection("todos")
 	cur, err := coll.Find(ctx, bson.D{{}})
@@ -46,4 +76,40 @@ func GetTodos(client mongo.Client, ctx context.Context) ([]*Todo, error) {
 	}
 
 	return todos, nil
+}
+
+func GetTodo(todoId primitive.ObjectID) (*Todo, error) {
+	client, ctx := initDb()
+	defer func() {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	var todo *Todo
+	coll := client.Database("todos").Collection("todos")
+	errColl := coll.FindOne(ctx, bson.D{{Key: "_id", Value: todoId}}).Decode(&todo)
+	if errColl != nil {
+		if errColl == mongo.ErrNoDocuments {
+			return todo, mongo.ErrNoDocuments
+		}
+		return nil, errColl
+	}
+	return todo, nil
+}
+
+func CreateTodo(todo *Todo) (interface{}, error) {
+	client, ctx := initDb()
+	defer func() {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database("todos").Collection("todos")
+	result, err := coll.InsertOne(ctx, todo)
+	if err != nil {
+		return nil, err
+	}
+	return result.InsertedID, err
 }
