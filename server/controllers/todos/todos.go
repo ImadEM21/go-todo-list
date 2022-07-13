@@ -2,12 +2,16 @@ package todosCtr
 
 import (
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	dbTodos "todo-list-api/database/todos"
+	middlewares "todo-list-api/middlewares"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -17,10 +21,12 @@ func GetTodos(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
+		return
 	}
 	res.WriteHeader(http.StatusOK)
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(todos)
+	return
 }
 
 func GetTodo(res http.ResponseWriter, req *http.Request) {
@@ -28,30 +34,49 @@ func GetTodo(res http.ResponseWriter, req *http.Request) {
 	todoId, err := primitive.ObjectIDFromHex(params["id"])
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("No id provided")
+		json.NewEncoder(res).Encode("No id provided " + err.Error())
+		return
 	}
+
 	todo, err := dbTodos.GetTodo(todoId)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
+		return
 	}
+
 	res.WriteHeader(http.StatusOK)
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(todo)
+	return
 }
 
 func CreateTodo(res http.ResponseWriter, req *http.Request) {
+	var todo *dbTodos.Todo
+	err := middlewares.DecodeJSONBody(res, req, &todo)
+	if err != nil {
+		var mr *middlewares.MalformedRequest
+		if errors.As(err, &mr) {
+			http.Error(res, mr.Msg, mr.Status)
+		} else {
+			log.Print(err.Error())
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
 	endDate, errDate := time.Parse(time.RFC3339, req.FormValue("endDate"))
 	if errDate != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errDate.Error()))
+		return
 	}
 	completed, errCom := strconv.ParseBool(req.FormValue("completed"))
 	if errCom != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errCom.Error()))
+		return
 	}
-	todo := &dbTodos.Todo{
+	todo = &dbTodos.Todo{
 		ID:          primitive.NewObjectID(),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -64,8 +89,132 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
+		return
 	}
+
+	json := simplejson.New()
+	json.Set("_id", insertedId)
+
+	payload, errJson := json.MarshalJSON()
+	if errJson != nil {
+		log.Println(errJson)
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
 	res.WriteHeader(http.StatusCreated)
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(insertedId)
+	res.Write(payload)
+	return
+}
+
+func UpdateTodo(res http.ResponseWriter, req *http.Request) {
+	var todo dbTodos.Todo
+	err := middlewares.DecodeJSONBody(res, req, &todo)
+	if err != nil {
+		var mr *middlewares.MalformedRequest
+		if errors.As(err, &mr) {
+			http.Error(res, mr.Msg, mr.Status)
+		} else {
+			log.Print(err.Error())
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	params := mux.Vars(req)
+	todoId, errId := primitive.ObjectIDFromHex(params["id"])
+	if errId != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + errId.Error())
+		return
+	}
+	*&todo.ID = todoId
+	*&todo.UpdatedAt = time.Now()
+	nModified, errMongo := dbTodos.UpdateTodo(&todo, todoId)
+	if errMongo != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errMongo.Error()))
+		return
+	}
+	json := simplejson.New()
+	json.Set("nModified", nModified)
+
+	payload, errJson := json.MarshalJSON()
+	if errJson != nil {
+		log.Println(errJson)
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payload)
+	return
+}
+
+func DeleteTodo(res http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	todoId, err := primitive.ObjectIDFromHex(params["id"])
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + err.Error())
+		return
+	}
+	nDeleted, errMongo := dbTodos.DeleteTodo(todoId)
+	if errMongo != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errMongo.Error()))
+		return
+	}
+
+	json := simplejson.New()
+	json.Set("nDeleted", nDeleted)
+
+	payload, errJson := json.MarshalJSON()
+	if errJson != nil {
+		log.Println(errJson)
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payload)
+	return
+}
+
+func CompleteTodo(res http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	todoId, err := primitive.ObjectIDFromHex(params["id"])
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + err.Error())
+		return
+	}
+	nModified, errMongo := dbTodos.CompleteTodo(todoId)
+	if errMongo != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errMongo.Error()))
+		return
+	}
+
+	json := simplejson.New()
+	json.Set("nModified", nModified)
+
+	payload, errJson := json.MarshalJSON()
+	if errJson != nil {
+		log.Println(errJson)
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payload)
+	return
 }

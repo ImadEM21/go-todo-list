@@ -2,9 +2,15 @@ module todo-list-api
 
 go 1.18
 
-require go.mongodb.org/mongo-driver v1.9.1
+require (
+	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f
+	go.mongodb.org/mongo-driver v1.9.1
+)
 
-require github.com/gorilla/mux v1.8.0 // indirect
+require (
+	github.com/bitly/go-simplejson v0.5.0
+	github.com/gorilla/mux v1.8.0
+)
 
 require (
 	github.com/go-stack/stack v1.8.0 // indirect

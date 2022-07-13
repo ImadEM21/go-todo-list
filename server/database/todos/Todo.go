@@ -113,3 +113,61 @@ func CreateTodo(todo *Todo) (interface{}, error) {
 	}
 	return result.InsertedID, err
 }
+
+func UpdateTodo(todo *Todo, todoId primitive.ObjectID) (int64, error) {
+	client, ctx := initDb()
+	defer func() {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database("todos").Collection("todos")
+	result, err := coll.UpdateByID(ctx, todoId, bson.D{{Key: "$set", Value: todo}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, mongo.ErrNoDocuments
+		}
+		return 0, err
+	}
+	return result.ModifiedCount, nil
+}
+
+func DeleteTodo(todoId primitive.ObjectID) (int64, error) {
+	client, ctx := initDb()
+	defer func() {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database("todos").Collection("todos")
+	result, err := coll.DeleteOne(ctx, bson.D{{Key: "_id", Value: todoId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, mongo.ErrNoDocuments
+		}
+		return 0, err
+	}
+	return result.DeletedCount, nil
+}
+
+func CompleteTodo(todoId primitive.ObjectID) (int64, error) {
+	client, ctx := initDb()
+	defer func() {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database("todos").Collection("todos")
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "completed", Value: true}, {Key: "updatedAt", Value: time.Now()}}}}
+	result, err := coll.UpdateByID(ctx, todoId, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, mongo.ErrNoDocuments
+		}
+		return 0, err
+	}
+	return result.ModifiedCount, nil
+}
