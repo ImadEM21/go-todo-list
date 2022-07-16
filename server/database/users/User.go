@@ -1,9 +1,16 @@
 package dbUser
 
 import (
+	"context"
+	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
@@ -15,4 +22,116 @@ type User struct {
 	FirstName string               `bson:"firstName"`
 	LastName  string               `bson:"lastName"`
 	Todos     []primitive.ObjectID `bson:"todos"`
+}
+
+func initDb() (mongo.Client, context.Context) {
+	var ctx = context.TODO()
+	envErr := godotenv.Load()
+	if envErr != nil {
+		log.Println("No .env file found")
+	}
+
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	if err != nil {
+		panic(err)
+	}
+	return *client, ctx
+}
+
+func closeDb(client *mongo.Client, ctx context.Context) {
+	err := client.Disconnect(ctx)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func GetUsers() ([]*User, error) {
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+
+	var users []*User
+	coll := client.Database("todos").Collection("users")
+	cur, err := coll.Find(ctx, bson.D{{}})
+	if err != nil {
+		return users, err
+	}
+	for cur.Next(ctx) {
+		var user User
+		err := cur.Decode(&user)
+		if err != nil {
+			return users, err
+		}
+		users = append(users, &user)
+	}
+	curErr := cur.Err()
+	if curErr != nil {
+		return users, curErr
+	}
+
+	cur.Close(ctx)
+
+	if len(users) == 0 {
+		return users, mongo.ErrNoDocuments
+	}
+
+	return users, nil
+}
+
+func GetUser(userId primitive.ObjectID) (*User, error) {
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+	var user *User
+	coll := client.Database("todos").Collection("users")
+	errColl := coll.FindOne(ctx, bson.D{{Key: "_id", Value: userId}}).Decode(&user)
+	if errColl != nil {
+		if errColl == mongo.ErrNoDocuments {
+			return user, mongo.ErrNoDocuments
+		}
+		return nil, errColl
+	}
+	return user, nil
+}
+
+func CreateUser(user *User) (interface{}, error) {
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	result, err := coll.InsertOne(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return result.InsertedID, err
+}
+
+func UpdateUser(user *User, userId primitive.ObjectID) (int64, error) {
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	result, err := coll.UpdateByID(ctx, userId, bson.D{{Key: "$set", Value: user}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, mongo.ErrNoDocuments
+		}
+		return 0, err
+	}
+	return result.ModifiedCount, nil
+}
+
+func DeleteUser(userId primitive.ObjectID) (int64, error) {
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	result, err := coll.DeleteOne(ctx, bson.D{{Key: "_id", Value: userId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, mongo.ErrNoDocuments
+		}
+		return 0, err
+	}
+	return result.DeletedCount, nil
 }

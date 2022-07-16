@@ -7,6 +7,7 @@ import (
 	"time"
 
 	todosRoutes "todo-list-api/routes/todos"
+	usersRoutes "todo-list-api/routes/users"
 
 	"github.com/gorilla/mux"
 )
@@ -30,6 +31,7 @@ func main() {
 	}
 
 	todosRoutes.HandleTodosRequest(router)
+	usersRoutes.HandleUsersRequest(router)
 
 	log.Fatal(srv.ListenAndServe())
 }
