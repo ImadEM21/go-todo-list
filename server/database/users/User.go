@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,11 +25,6 @@ type User struct {
 
 func initDb() (mongo.Client, context.Context) {
 	var ctx = context.TODO()
-	envErr := godotenv.Load()
-	if envErr != nil {
-		log.Println("No .env file found")
-	}
-
 	uri := os.Getenv("MONGODB_URI")
 	if uri == "" {
 		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
@@ -56,7 +50,8 @@ func GetUsers() ([]*User, error) {
 
 	var users []*User
 	coll := client.Database("todos").Collection("users")
-	cur, err := coll.Find(ctx, bson.D{{}})
+	opts := options.Find().SetProjection(bson.D{{Key: "password", Value: 0}})
+	cur, err := coll.Find(ctx, bson.D{{}}, opts)
 	if err != nil {
 		return users, err
 	}
@@ -87,7 +82,8 @@ func GetUser(userId primitive.ObjectID) (*User, error) {
 	defer closeDb(&client, ctx)
 	var user *User
 	coll := client.Database("todos").Collection("users")
-	errColl := coll.FindOne(ctx, bson.D{{Key: "_id", Value: userId}}).Decode(&user)
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	errColl := coll.FindOne(ctx, bson.D{{Key: "_id", Value: userId}}, opts).Decode(&user)
 	if errColl != nil {
 		if errColl == mongo.ErrNoDocuments {
 			return user, mongo.ErrNoDocuments
@@ -134,4 +130,34 @@ func DeleteUser(userId primitive.ObjectID) (int64, error) {
 		return 0, err
 	}
 	return result.DeletedCount, nil
+}
+
+func Login(email string) (*User, error) {
+	var user *User
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	err := coll.FindOne(ctx, bson.D{{Key: "email", Value: email}}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return user, mongo.ErrNoDocuments
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+func CheckIfUserExistsByEmail(email string) (bool, error) {
+	var user *User
+	client, ctx := initDb()
+	defer closeDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	err := coll.FindOne(ctx, bson.D{{Key: "email", Value: email}}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }

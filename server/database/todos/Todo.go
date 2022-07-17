@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,10 +24,6 @@ type Todo struct {
 
 func initDb() (mongo.Client, context.Context) {
 	var ctx = context.TODO()
-	envErr := godotenv.Load()
-	if envErr != nil {
-		log.Println("No .env file found")
-	}
 
 	uri := os.Getenv("MONGODB_URI")
 	if uri == "" {
