@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Grid, Typography, Box, Avatar, styled, Button } from '@mui/material';
 import Login from '../auth/Login';
 import Signup from '../auth/Signup';
@@ -131,7 +131,7 @@ const Home: React.FC<IHomeProps> = (props) => {
                     />
                 </Grid>
                 <Grid item={true} container={true} direction="column" justifyContent="center" alignItems="center" className={classes.right}>
-                    <Avatar variant="square" alt="logo mmie" src="/images/logo_size.jpg" className={classes.logo} />
+                    <Avatar variant="square" alt="TODO" src="/images/logo_size.jpg" className={classes.logo} />
 
                     <Typography variant="h5" component="h2" align="center" className={classes.title}>
                         J’ai déjà un compte

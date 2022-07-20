@@ -1,6 +1,9 @@
 import { styled, TextField, Button } from '@mui/material';
 import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { UserContextType } from '../../@types/user';
+import { AuthContext } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export interface ILoginProps {}
 
@@ -36,6 +39,8 @@ export const isValidEmail = (email: string) =>
     /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
 
 const Login: React.FunctionComponent<ILoginProps> = (props) => {
+    const navigate = useNavigate();
+    const { login } = React.useContext(AuthContext) as UserContextType;
     const {
         register,
         handleSubmit,
@@ -47,8 +52,13 @@ const Login: React.FunctionComponent<ILoginProps> = (props) => {
         return isValid;
     };
 
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
-        console.log(data);
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        try {
+            await login(data);
+            navigate('/dashboard');
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     return (

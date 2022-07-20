@@ -5,6 +5,7 @@ import AuthProvider from './components/contexts/AuthContext';
 import TodoProvider from './components/contexts/TodosContext';
 import { CircularProgress } from '@mui/material';
 const Home = lazy(() => import('./components/home/Home'));
+const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 
 export interface IAppProps {}
 
@@ -57,6 +58,7 @@ const App: React.FunctionComponent<IAppProps> = () => {
                             <BrowserRouter>
                                 <Routes>
                                     <Route path="/" element={<Home />} />
+                                    <Route path="/dashboard" element={<Dashboard />} />
                                 </Routes>
                             </BrowserRouter>
                         </Suspense>

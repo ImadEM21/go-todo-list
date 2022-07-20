@@ -7,7 +7,7 @@ import (
 )
 
 func HandleTodosRequest(router *mux.Router) *mux.Router {
-	s := router.PathPrefix("/todos").Subrouter()
+	s := router.PathPrefix("/api/todos").Subrouter()
 	s.HandleFunc("/", todosCtr.GetTodos).Methods("GET")
 	s.HandleFunc("/{id}", todosCtr.GetTodo).Methods("GET")
 	s.HandleFunc("/", todosCtr.CreateTodo).Methods("POST")

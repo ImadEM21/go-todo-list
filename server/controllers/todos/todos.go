@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	dbTodos "todo-list-api/database/todos"
@@ -70,20 +69,15 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(errDate.Error()))
 		return
 	}
-	completed, errCom := strconv.ParseBool(req.FormValue("completed"))
-	if errCom != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errCom.Error()))
-		return
-	}
+
 	todo = &dbTodos.Todo{
 		ID:          primitive.NewObjectID(),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
-		Title:       req.FormValue("title"),
-		Description: req.FormValue("description"),
+		Title:       todo.Title,
+		Description: todo.Description,
 		EndDate:     endDate,
-		Completed:   completed,
+		Completed:   todo.Completed,
 	}
 	insertedId, err := dbTodos.CreateTodo(todo)
 	if err != nil {

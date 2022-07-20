@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 )
 
@@ -31,16 +32,26 @@ func main() {
 	n := negroni.Classic()
 	n.UseHandler(router)
 
+	todosRoutes.HandleTodosRequest(router)
+	usersRoutes.HandleUsersRequest(router)
+
+	/*corsOpts := cors.Options{
+		AllowedHeaders: []string{"X-Requested-With", "Content-Type"},
+		AllowedOrigins: []string{os.Getenv("ORIGIN_ALLOWED")},
+		AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
+	}
+
+	handler := cors.New(corsOpts).Handler(n)*/
+
+	handler := cors.AllowAll().Handler(n)
+
 	srv := &http.Server{
-		Handler:      n,
+		Handler:      handler,
 		Addr:         "127.0.0.1:3000",
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
 	}
-
-	todosRoutes.HandleTodosRequest(router)
-	usersRoutes.HandleUsersRequest(router)
 
 	log.Fatal(srv.ListenAndServe())
 }

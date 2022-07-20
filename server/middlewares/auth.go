@@ -17,7 +17,7 @@ var jwtKey = []byte(os.Getenv("TOKEN"))
 
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		if req.RequestURI == "/users/signup" || req.RequestURI == "/users/login" {
+		if req.RequestURI == "/api/users/signup" || req.RequestURI == "/api/users/login" {
 			next.ServeHTTP(res, req)
 		} else {
 			value, ok := req.Header["Authorization"]

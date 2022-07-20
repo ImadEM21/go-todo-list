@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button, Modal, Box, Typography, styled, TextField } from '@mui/material';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm, Controller } from 'react-hook-form';
 import { isValidEmail } from './Login';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import { AuthContext } from '../contexts/AuthContext';
+import { ISignup, UserContextType } from '../../@types/user';
+import { useNavigate } from 'react-router-dom';
 
 export interface ISignupProps {}
 
@@ -87,19 +90,22 @@ const Form = styled('form')(({ theme }) => ({
 }));
 
 const Signup: React.FC<ISignupProps> = (props) => {
+    const { signup } = useContext(AuthContext) as UserContextType;
     const formSchema = Yup.object().shape({
         password: Yup.string().required('Le mot de passe est obligatoire').min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
         confirmPwd: Yup.string()
             .required('Le mot de passe est obligatoire')
-            .oneOf([Yup.ref('password')], 'Les mots de passe ne sont pas identiques')
+            .oneOf([Yup.ref('password')], 'Les mots de passe ne sont pas identiques'),
+        firstName: Yup.string().matches(/[^-'a-zÀ-ÿ ]/gi, { message: 'Vous ne pouvez pas saisir de caractères spéciaux' })
     });
-    const formOptions = { resolver: yupResolver(formSchema) };
     const {
+        control,
         register,
         handleSubmit,
         formState: { errors }
-    } = useForm<Inputs>(formOptions);
+    } = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
     const [open, setOpen] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -108,9 +114,29 @@ const Signup: React.FC<ISignupProps> = (props) => {
         return isValid;
     };
 
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
-        console.log(data);
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        const payload: ISignup = {
+            email: data.email,
+            password: data.password,
+            firstName: data.firstName,
+            lastName: data.lastName
+        };
+        try {
+            await signup(payload);
+            navigate('/dashboard');
+        } catch (e) {
+            console.error(e);
+        }
     };
+
+    useEffect(() => {
+        console.log(errors);
+    }, [errors]);
+
+    function testLetterRegex(value: string) {
+        const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ ]*$/.test(value);
+        return regex;
+    }
 
     return (
         <>
@@ -123,7 +149,28 @@ const Signup: React.FC<ISignupProps> = (props) => {
                         Se créer un compte
                     </Typography>
                     <Form onSubmit={handleSubmit(onSubmit)}>
-                        <TextField {...register('firstName', { required: true })} label="Prénom" type="text" color="info" variant="filled" required />
+                        <Controller
+                            name="firstName"
+                            control={control}
+                            render={({ field: { onChange, value, ...rest } }) => (
+                                <TextField
+                                    {...rest}
+                                    value={value}
+                                    onChange={(e) => {
+                                        if (testLetterRegex(e.target.value)) {
+                                            onChange(e);
+                                        }
+                                    }}
+                                    //id="firstName"
+                                    label="Prénom"
+                                    type="text"
+                                    color="info"
+                                    variant="filled"
+                                    required
+                                />
+                            )}
+                        />
+
                         <TextField {...register('lastName', { required: true })} label="Nom" type="text" color="info" variant="filled" required />
                         <TextField
                             {...register('email', { required: true, validate: handleEmailValidation })}
@@ -155,7 +202,7 @@ const Signup: React.FC<ISignupProps> = (props) => {
                             label="Confirmez le mot de passe"
                             type="password"
                             color="info"
-                            helperText={errors.password && errors.confirmPwd?.message}
+                            helperText={errors.confirmPwd && errors.confirmPwd?.message}
                             FormHelperTextProps={{
                                 className: classes.helper
                             }}

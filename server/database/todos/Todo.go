@@ -13,13 +13,13 @@ import (
 )
 
 type Todo struct {
-	ID          primitive.ObjectID `bson:"_id"`
-	CreatedAt   time.Time          `bson:"createdAt"`
-	UpdatedAt   time.Time          `bson:"updatedAt"`
-	Title       string             `bson:"title"`
-	Description string             `bson:"description"`
-	EndDate     time.Time          `bson:"endDate"`
-	Completed   bool               `bson:"completed"`
+	ID          primitive.ObjectID `bson:"_id" json:"_id"`
+	CreatedAt   time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time          `bson:"updatedAt" json:"updatedAt"`
+	Title       string             `bson:"title" json:"title"`
+	Description string             `bson:"description" json:"description"`
+	EndDate     time.Time          `bson:"endDate" json:"endDate"`
+	Completed   bool               `bson:"completed" json:"completed"`
 }
 
 func initDb() (mongo.Client, context.Context) {
