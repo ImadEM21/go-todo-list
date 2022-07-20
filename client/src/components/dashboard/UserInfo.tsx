@@ -52,6 +52,8 @@ export interface IUserInfoProps {
     };
 }
 
+const capitalizeFirstLetter = ([first, ...rest]: String, locale = navigator.language) => (first === undefined ? '' : first.toLocaleUpperCase(locale) + rest.join(''));
+
 const UserInfo = (props: IUserInfoProps) => {
     const { user } = useContext(AuthContext) as UserContextType;
     const theme = useTheme();
@@ -124,7 +126,7 @@ const UserInfo = (props: IUserInfoProps) => {
                                 }
                             }}
                         >
-                            {user.firstName} {user.lastName.toUpperCase()}
+                            {capitalizeFirstLetter(user.firstName)} {user.lastName.toUpperCase()}
                         </Typography>
                     )}
                 </Grid>

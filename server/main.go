@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	todosRoutes "todo-list-api/routes/todos"
-	usersRoutes "todo-list-api/routes/users"
+	routes "todo-list-api/routes"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -32,8 +31,8 @@ func main() {
 	n := negroni.Classic()
 	n.UseHandler(router)
 
-	todosRoutes.HandleTodosRequest(router)
-	usersRoutes.HandleUsersRequest(router)
+	routes.HandleTodosRequest(router)
+	routes.HandleUsersRequest(router)
 
 	/*corsOpts := cors.Options{
 		AllowedHeaders: []string{"X-Requested-With", "Content-Type"},
