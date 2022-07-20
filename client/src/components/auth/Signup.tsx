@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Button, Modal, Box, Typography, styled, TextField } from '@mui/material';
-import { SubmitHandler, useForm, Controller } from 'react-hook-form';
+import React, { useContext, useState } from 'react';
+import { Button, Modal, Box, Typography, styled, TextField, Alert } from '@mui/material';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { isValidEmail } from './Login';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -95,26 +95,33 @@ const Signup: React.FC<ISignupProps> = (props) => {
         password: Yup.string().required('Le mot de passe est obligatoire').min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
         confirmPwd: Yup.string()
             .required('Le mot de passe est obligatoire')
-            .oneOf([Yup.ref('password')], 'Les mots de passe ne sont pas identiques'),
-        firstName: Yup.string().matches(/[^-'a-zÀ-ÿ ]/gi, { message: 'Vous ne pouvez pas saisir de caractères spéciaux' })
+            .oneOf([Yup.ref('password')], 'Les mots de passe ne sont pas identiques')
     });
     const {
-        control,
         register,
         handleSubmit,
         formState: { errors }
     } = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
     const [open, setOpen] = useState<boolean>(false);
+    const [firstNameError, setFirstNameError] = useState(false);
+    const [lastNameError, setLasttNameError] = useState(false);
+    const [error, setError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<unknown>();
     const navigate = useNavigate();
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const handleEmailValidation = (email: string) => {
-        const isValid = isValidEmail(email);
-        return isValid;
-    };
+    const handleEmailValidation = (email: string) => isValidEmail(email);
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        if (/[^-'a-zÀ-ÿ ]/gi.test(data.firstName)) {
+            setFirstNameError(true);
+            return;
+        }
+        if (/[^-'a-zÀ-ÿ ]/gi.test(data.lastName)) {
+            setLasttNameError(true);
+            return;
+        }
         const payload: ISignup = {
             email: data.email,
             password: data.password,
@@ -125,18 +132,10 @@ const Signup: React.FC<ISignupProps> = (props) => {
             await signup(payload);
             navigate('/dashboard');
         } catch (e) {
-            console.error(e);
+            setErrorMessage(e);
+            setError(true);
         }
     };
-
-    useEffect(() => {
-        console.log(errors);
-    }, [errors]);
-
-    function testLetterRegex(value: string) {
-        const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ ]*$/.test(value);
-        return regex;
-    }
 
     return (
         <>
@@ -149,29 +148,30 @@ const Signup: React.FC<ISignupProps> = (props) => {
                         Se créer un compte
                     </Typography>
                     <Form onSubmit={handleSubmit(onSubmit)}>
-                        <Controller
-                            name="firstName"
-                            control={control}
-                            render={({ field: { onChange, value, ...rest } }) => (
-                                <TextField
-                                    {...rest}
-                                    value={value}
-                                    onChange={(e) => {
-                                        if (testLetterRegex(e.target.value)) {
-                                            onChange(e);
-                                        }
-                                    }}
-                                    //id="firstName"
-                                    label="Prénom"
-                                    type="text"
-                                    color="info"
-                                    variant="filled"
-                                    required
-                                />
-                            )}
+                        <TextField
+                            {...register('firstName', { required: true })}
+                            helperText={firstNameError && 'Le prénom contient des caractères spéciaux non autorisés'}
+                            FormHelperTextProps={{
+                                className: classes.helper
+                            }}
+                            label="Prénom"
+                            type="text"
+                            color="info"
+                            variant="filled"
+                            required
                         />
-
-                        <TextField {...register('lastName', { required: true })} label="Nom" type="text" color="info" variant="filled" required />
+                        <TextField
+                            {...register('lastName', { required: true })}
+                            helperText={lastNameError && 'Le nom contient des caractères spéciaux non autorisés'}
+                            FormHelperTextProps={{
+                                className: classes.helper
+                            }}
+                            label="Nom"
+                            type="text"
+                            color="info"
+                            variant="filled"
+                            required
+                        />
                         <TextField
                             {...register('email', { required: true, validate: handleEmailValidation })}
                             defaultValue=""
@@ -209,6 +209,21 @@ const Signup: React.FC<ISignupProps> = (props) => {
                             variant="filled"
                             required
                         />
+                        {error && (
+                            <Alert
+                                onClose={() => {
+                                    setError(false);
+                                    setErrorMessage('');
+                                }}
+                                severity="error"
+                            >
+                                <>
+                                    Une erreur est survenue, veuillez réessayer.
+                                    <br />
+                                    Message: {errorMessage}
+                                </>
+                            </Alert>
+                        )}
                         <div className={classes.btnContainer}>
                             <Button variant="contained" color="info" type="reset">
                                 RÉINITIALISER

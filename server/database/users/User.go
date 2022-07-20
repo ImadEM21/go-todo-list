@@ -2,6 +2,7 @@ package dbUser
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"time"
@@ -140,7 +141,7 @@ func Login(email string) (*User, error) {
 	err := coll.FindOne(ctx, bson.D{{Key: "email", Value: email}}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return user, mongo.ErrNoDocuments
+			return user, errors.New("Aucun utilisateur trouvé")
 		}
 		return nil, err
 	}

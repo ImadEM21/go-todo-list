@@ -1,5 +1,5 @@
-import { styled, TextField, Button } from '@mui/material';
-import React from 'react';
+import { styled, TextField, Button, Alert } from '@mui/material';
+import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { UserContextType } from '../../@types/user';
 import { AuthContext } from '../contexts/AuthContext';
@@ -46,6 +46,8 @@ const Login: React.FunctionComponent<ILoginProps> = (props) => {
         handleSubmit,
         formState: { errors }
     } = useForm<Inputs>();
+    const [error, setError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<unknown>();
 
     const handleEmailValidation = (email: string) => {
         const isValid = isValidEmail(email);
@@ -57,7 +59,8 @@ const Login: React.FunctionComponent<ILoginProps> = (props) => {
             await login(data);
             navigate('/dashboard');
         } catch (error) {
-            console.log(error);
+            setErrorMessage(error);
+            setError(true);
         }
     };
 
@@ -88,6 +91,21 @@ const Login: React.FunctionComponent<ILoginProps> = (props) => {
                 variant="filled"
                 required
             />
+            {error && (
+                <Alert
+                    onClose={() => {
+                        setError(false);
+                        setErrorMessage('');
+                    }}
+                    severity="error"
+                >
+                    <>
+                        Une erreur est survenue, veuillez réessayer.
+                        <br />
+                        Message: {errorMessage}
+                    </>
+                </Alert>
+            )}
             <div className={classes.btnContainer}>
                 <Button variant="contained" color="info" type="submit">
                     Se connecter

@@ -24,7 +24,7 @@ export interface ISignup {
 
 export type UserContextType = {
     user: IUser | null;
-    login: (payload: ILogin) => Promise;
-    signup: (payload: ISignup) => Promise;
+    login: (payload: ILogin) => Promise<IUser>;
+    signup: (payload: ISignup) => Promise<IUser>;
     logout: () => void;
 };

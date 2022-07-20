@@ -5,7 +5,9 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/mail"
 	"os"
+	"regexp"
 	"time"
 
 	dbUser "todo-list-api/database/users"
@@ -166,7 +168,7 @@ func Login(res http.ResponseWriter, req *http.Request) {
 	valid := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
 	if valid != nil {
 		res.WriteHeader(http.StatusUnauthorized)
-		res.Write([]byte(valid.Error()))
+		res.Write([]byte("Le mot de passe est incorrect"))
 		return
 	}
 
@@ -199,6 +201,11 @@ func Login(res http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func validEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
+}
+
 func Signup(res http.ResponseWriter, req *http.Request) {
 	var user *dbUser.User
 	err := middlewares.DecodeJSONBody(res, req, &user)
@@ -210,6 +217,32 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 			log.Print(err.Error())
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
+		return
+	}
+
+	var validNames = regexp.MustCompile(`[^-'a-zÀ-ÿ]`)
+
+	if validNames.MatchString(user.FirstName) {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Le prénom contient des caractères qui ne sont pas autorisés"))
+		return
+	}
+
+	if validNames.MatchString(user.LastName) {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Le nom contient des caractères qui ne sont pas autorisés"))
+		return
+	}
+
+	if !validEmail(user.Email) {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("L'adresse mail n'est pas valide"))
+		return
+	}
+
+	if len(user.Password) < 6 {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Le mot de passe doit contenir au moins 6 caractères"))
 		return
 	}
 
@@ -227,7 +260,7 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 
 	hash, errHash := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if errHash != nil {
-		res.WriteHeader(http.StatusBadRequest)
+		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(errHash.Error()))
 		return
 	}

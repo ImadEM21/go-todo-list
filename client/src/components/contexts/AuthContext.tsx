@@ -19,43 +19,46 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
     }, [user]);
 
     const login = async (payload: ILogin) => {
-        try {
-            const res = await usersApi.login(payload);
-            localStorage.setItem('user-token', res.data.token);
-            localStorage.setItem('user-obj', JSON.stringify(res.data.user));
-            setUser(res.data.user);
-            return res.data.user;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.log('error message: ', error.message);
-                console.log('error response', error.response);
-                // 👇️ error: AxiosError<any, any>
-                return error.response?.data;
-            } else {
-                console.log('unexpected error: ', error);
-                return error;
+        return new Promise<IUser>(async (resolve, reject) => {
+            try {
+                const res = await usersApi.login(payload);
+                localStorage.setItem('user-token', res.data.token);
+                localStorage.setItem('user-obj', JSON.stringify(res.data.user));
+                setUser(res.data.user);
+                resolve(res.data.user);
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    console.log('error response', error.response);
+                    // 👇️ error: AxiosError<any, any>
+                    reject(error.response?.data);
+                } else {
+                    console.log('unexpected error: ', error);
+                    reject(error);
+                }
             }
-        }
+        });
     };
 
-    const signup = async (payload: ISignup) => {
-        try {
-            const res = await usersApi.signup(payload);
-            localStorage.setItem('user-token', res.data.token);
-            localStorage.setItem('user-obj', JSON.stringify(res.data.user));
-            setUser(res.data.user);
-            return res.data.user;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.log('error message: ', error.message);
-                console.log('error response', error.response);
-                // 👇️ error: AxiosError<any, any>
-                return error.response?.data;
-            } else {
-                console.log('unexpected error: ', error);
-                return error;
+    const signup = (payload: ISignup) => {
+        return new Promise<IUser>(async (resolve, reject) => {
+            try {
+                const res = await usersApi.signup(payload);
+                localStorage.setItem('user-token', res.data.token);
+                localStorage.setItem('user-obj', JSON.stringify(res.data.user));
+                setUser(res.data.user);
+                resolve(res.data.user);
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    console.log('error response', error.response);
+                    reject(error.response?.data);
+                } else {
+                    console.log('unexpected error: ', error);
+                    reject(error);
+                }
             }
-        }
+        });
     };
 
     const logout = () => {
