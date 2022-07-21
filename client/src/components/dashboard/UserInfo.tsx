@@ -5,6 +5,7 @@ import { UserContextType } from '../../@types/user';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { useNavigate } from 'react-router-dom';
+import { capitalizeFirstLetter } from '../../utils/funcs';
 
 const PREFIX = 'UserInfo';
 
@@ -51,8 +52,6 @@ export interface IUserInfoProps {
         muiName: string;
     };
 }
-
-const capitalizeFirstLetter = ([first, ...rest]: String, locale = navigator.language) => (first === undefined ? '' : first.toLocaleUpperCase(locale) + rest.join(''));
 
 const UserInfo = (props: IUserInfoProps) => {
     const { user } = useContext(AuthContext) as UserContextType;
