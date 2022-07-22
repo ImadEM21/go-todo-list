@@ -16,14 +16,16 @@ type Todo struct {
 	Description string             `bson:"description" json:"description"`
 	EndDate     time.Time          `bson:"endDate" json:"endDate"`
 	Completed   bool               `bson:"completed" json:"completed"`
+	UserId      primitive.ObjectID `bson:"userId" json:"userId"`
 }
 
-func GetTodos() ([]*Todo, error) {
+func GetTodos(userId primitive.ObjectID) ([]*Todo, error) {
 	client, ctx := InitDb()
 	defer CloseDb(&client, ctx)
 	var todos []*Todo
+
 	coll := client.Database("todos").Collection("todos")
-	cur, err := coll.Find(ctx, bson.D{{}})
+	cur, err := coll.Find(ctx, bson.D{{Key: "userId", Value: userId}})
 	if err != nil {
 		return todos, err
 	}

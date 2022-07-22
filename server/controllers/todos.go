@@ -16,7 +16,13 @@ import (
 )
 
 func GetTodos(res http.ResponseWriter, req *http.Request) {
-	todos, err := database.GetTodos()
+	userId, err := primitive.ObjectIDFromHex(req.URL.Query().Get("userId"))
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No user id provided " + err.Error())
+		return
+	}
+	todos, err := database.GetTodos(userId)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
@@ -50,6 +56,11 @@ func GetTodo(res http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func isDateValue(stringDate string) bool {
+	_, err := time.Parse(time.RFC3339, stringDate)
+	return err == nil
+}
+
 func CreateTodo(res http.ResponseWriter, req *http.Request) {
 	var todo *database.Todo
 	err := middlewares.DecodeJSONBody(res, req, &todo)
@@ -63,10 +74,28 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
-	endDate, errDate := time.Parse(time.RFC3339, req.FormValue("endDate"))
-	if errDate != nil {
+
+	if len(todo.Title) < 1 {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errDate.Error()))
+		res.Write([]byte("Le titre est obligatoire"))
+		return
+	}
+
+	if len(todo.Description) < 1 {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("La description est obligatoire"))
+		return
+	}
+
+	if todo.UserId.IsZero() {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("L'ID de l'utilisateur est obligatoire"))
+		return
+	}
+
+	if todo.EndDate.Year() == 1 {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Le date n'est pas valide"))
 		return
 	}
 
@@ -76,9 +105,11 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 		UpdatedAt:   time.Now(),
 		Title:       todo.Title,
 		Description: todo.Description,
-		EndDate:     endDate,
+		EndDate:     todo.EndDate,
 		Completed:   todo.Completed,
+		UserId:      todo.UserId,
 	}
+
 	insertedId, err := database.CreateTodo(todo)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)

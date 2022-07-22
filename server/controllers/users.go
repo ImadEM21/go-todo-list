@@ -220,7 +220,7 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var validNames = regexp.MustCompile(`[^-'a-zÀ-ÿ]`)
+	var validNames = regexp.MustCompile(`[^-'A-Za-zÀ-ÿ]`)
 
 	if validNames.MatchString(user.FirstName) {
 		res.WriteHeader(http.StatusBadRequest)
@@ -265,8 +265,6 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	emptyTodos := make([]primitive.ObjectID, 0)
-
 	user = &database.User{
 		ID:        primitive.NewObjectID(),
 		CreatedAt: time.Now(),
@@ -275,7 +273,6 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Password:  string(hash),
-		Todos:     emptyTodos,
 	}
 
 	_, errMongo := database.CreateUser(user)

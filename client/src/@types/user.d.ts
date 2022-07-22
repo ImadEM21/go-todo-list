@@ -1,11 +1,8 @@
-import { ITodo } from './todo';
-
 export interface IUser {
     _id: string;
     email: string;
     firstName: string;
     lastName: string;
-    todos: ITodo[];
     createdAt: Date;
     updatedAt: Date;
 }

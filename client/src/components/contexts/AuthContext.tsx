@@ -18,7 +18,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         if (userStorage && !user) setUser(JSON.parse(userStorage));
     }, [user]);
 
-    const login = async (payload: ILogin) => {
+    const login = (payload: ILogin) => {
         return new Promise<IUser>(async (resolve, reject) => {
             try {
                 const res = await usersApi.login(payload);
@@ -35,6 +35,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
                 } else {
                     console.log('unexpected error: ', error);
                     reject(error);
+                    //reject(new Error('An error has occured', { cause: error as Error }));
                 }
             }
         });

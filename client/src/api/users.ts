@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ILogin, ISignup, IUser } from '../@types/user';
 
-const token = localStorage.getItem('chillingbook-user-token');
+const token = localStorage.getItem('user-token');
 
 axios.defaults.headers.common = { Authorization: `Bearer ${token}` };
 

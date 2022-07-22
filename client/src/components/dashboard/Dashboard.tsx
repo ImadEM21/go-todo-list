@@ -2,7 +2,6 @@ import { useContext } from 'react';
 import Sidebar from './sidebar/Sidebar';
 import UserInfo from './UserInfo';
 import { styled, Grid, Typography, useTheme } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
@@ -34,7 +33,6 @@ export interface IDashboardProps {}
 
 const Dashboard = (props: IDashboardProps) => {
     const { user } = useContext(AuthContext) as UserContextType;
-    const navigate = useNavigate();
     const theme = useTheme();
 
     return (
