@@ -6,6 +6,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
+import { isValidEmail } from '../../utils/funcs';
 
 export interface ILoginProps {}
 
@@ -39,10 +40,6 @@ const Root = styled('form')(({ theme }) => ({
         color: theme.palette.text.primary
     }
 }));
-
-export const isValidEmail = (email: string) =>
-    // eslint-disable-next-line no-useless-escape
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
 
 const Login: React.FunctionComponent<ILoginProps> = (props) => {
     const navigate = useNavigate();

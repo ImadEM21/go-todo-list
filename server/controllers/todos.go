@@ -16,7 +16,7 @@ import (
 )
 
 type Complete struct {
-	completed bool
+	Completed bool `json:"completed"`
 }
 
 func GetTodos(res http.ResponseWriter, req *http.Request) {
@@ -236,7 +236,7 @@ func CompleteTodo(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("No id provided " + err.Error())
 		return
 	}
-	nModified, errMongo := database.CompleteTodo(todoId, completed.completed)
+	nModified, errMongo := database.CompleteTodo(todoId, completed.Completed)
 	if errMongo != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errMongo.Error()))

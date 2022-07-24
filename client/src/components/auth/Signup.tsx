@@ -1,11 +1,12 @@
 import React, { useContext, useState } from 'react';
 import { Button, Modal, Box, Typography, styled, TextField, Alert } from '@mui/material';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { isValidEmail, LocationState } from './Login';
+import { LocationState } from './Login';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import { AuthContext } from '../contexts/AuthContext';
 import { ISignup, UserContextType } from '../../@types/user';
+import { isValidEmail } from '../../utils/funcs';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface ISignupProps {}
