@@ -45,7 +45,7 @@ func GetTodos(userId primitive.ObjectID) ([]*Todo, error) {
 	cur.Close(ctx)
 
 	if len(todos) == 0 {
-		return todos, mongo.ErrNoDocuments
+		return make([]*Todo, 0), nil
 	}
 
 	return todos, nil
@@ -105,11 +105,11 @@ func DeleteTodo(todoId primitive.ObjectID) (int64, error) {
 	return result.DeletedCount, nil
 }
 
-func CompleteTodo(todoId primitive.ObjectID) (int64, error) {
+func CompleteTodo(todoId primitive.ObjectID, complete bool) (int64, error) {
 	client, ctx := InitDb()
 	defer CloseDb(&client, ctx)
 	coll := client.Database("todos").Collection("todos")
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "completed", Value: true}, {Key: "updatedAt", Value: time.Now()}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "completed", Value: complete}, {Key: "updatedAt", Value: time.Now()}}}}
 	result, err := coll.UpdateByID(ctx, todoId, update)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

@@ -1,11 +1,10 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { createTheme, StyledEngineProvider, Theme, ThemeProvider } from '@mui/material/styles';
 import AuthProvider from './components/contexts/AuthContext';
 import TodoProvider from './components/contexts/TodosContext';
 import { CircularProgress } from '@mui/material';
-const Home = lazy(() => import('./components/home/Home'));
-const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
+import { routes } from './routes/routes';
 
 export interface IAppProps {}
 
@@ -57,8 +56,9 @@ const App: React.FunctionComponent<IAppProps> = () => {
                         >
                             <BrowserRouter>
                                 <Routes>
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="/dashboard" element={<Dashboard />} />
+                                    {routes.map((route) => (
+                                        <Route path={route.path} key={route.id} element={route.component} />
+                                    ))}
                                 </Routes>
                             </BrowserRouter>
                         </Suspense>

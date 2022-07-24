@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 import { IUser, UserContextType, ILogin, ISignup } from '../../@types/user';
 import usersApi from '../../api/users';
 import axios from 'axios';
@@ -12,11 +12,6 @@ interface Props {
 const AuthProvider: React.FC<Props> = ({ children }) => {
     const userObj: string | null = localStorage.getItem('user-obj');
     const [user, setUser] = useState<IUser | null>(userObj ? JSON.parse(userObj) : null);
-
-    useEffect(() => {
-        const userStorage = localStorage.getItem('user-obj');
-        if (userStorage && !user) setUser(JSON.parse(userStorage));
-    }, [user]);
 
     const login = (payload: ILogin) => {
         return new Promise<IUser>(async (resolve, reject) => {
@@ -66,6 +61,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         setUser(null);
         localStorage.removeItem('user-token');
         localStorage.removeItem('user-obj');
+        localStorage.removeItem('todos-obj');
     };
 
     return <AuthContext.Provider value={{ user, login, signup, logout }}>{children}</AuthContext.Provider>;

@@ -1,9 +1,11 @@
 import { styled, TextField, Button, Alert } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { UserContextType } from '../../@types/user';
 import { AuthContext } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { TodoContext } from '../contexts/TodosContext';
+import { TodoContextType } from '../../@types/todo';
 
 export interface ILoginProps {}
 
@@ -11,6 +13,10 @@ type Inputs = {
     email: string;
     password: string;
 };
+
+export interface LocationState {
+    from: { pathname: string };
+}
 
 const PREFIX = 'Login';
 
@@ -40,7 +46,10 @@ export const isValidEmail = (email: string) =>
 
 const Login: React.FunctionComponent<ILoginProps> = (props) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { from } = (location?.state as LocationState) || { pathname: '/dashboard' };
     const { login } = React.useContext(AuthContext) as UserContextType;
+    const { getTodos } = useContext(TodoContext) as TodoContextType;
     const {
         register,
         handleSubmit,
@@ -56,8 +65,9 @@ const Login: React.FunctionComponent<ILoginProps> = (props) => {
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         try {
-            await login(data);
-            navigate('/dashboard');
+            const user = await login(data);
+            await getTodos(user._id);
+            navigate(from ? from.pathname : '/dashboard');
         } catch (error) {
             setErrorMessage(error);
             setError(true);
@@ -66,6 +76,7 @@ const Login: React.FunctionComponent<ILoginProps> = (props) => {
 
     return (
         <Root onSubmit={handleSubmit(onSubmit)}>
+            {from && from?.pathname ? <Alert severity="warning">Veuillez vous connecter pour accèder à cette page</Alert> : null}
             <TextField
                 {...register('email', { required: true, validate: handleEmailValidation })}
                 defaultValue=""

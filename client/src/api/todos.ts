@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ITodo } from '../@types/todo';
+import { ITodo, Complete } from '../@types/todo';
 
 const token = localStorage.getItem('chillingbook-user-token');
 
@@ -27,6 +27,10 @@ export const updateTodo = (todoId: string, todo: ITodo) => {
     return api.put(`/${todoId}`, todo);
 };
 
+export const completeTodo = (todoId: string, payload: Complete) => {
+    return api.put(`/${todoId}/complete`, payload);
+};
+
 export const deleteTodo = (todoId: string) => {
     return api.delete(`/${todoId}`);
 };
@@ -36,7 +40,8 @@ const todosApi = {
     getTodo,
     createTodo,
     updateTodo,
-    deleteTodo
+    deleteTodo,
+    completeTodo
 };
 
 export default todosApi;

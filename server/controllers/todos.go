@@ -15,6 +15,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type Complete struct {
+	completed bool
+}
+
 func GetTodos(res http.ResponseWriter, req *http.Request) {
 	userId, err := primitive.ObjectIDFromHex(req.URL.Query().Get("userId"))
 	if err != nil {
@@ -213,6 +217,18 @@ func DeleteTodo(res http.ResponseWriter, req *http.Request) {
 }
 
 func CompleteTodo(res http.ResponseWriter, req *http.Request) {
+	var completed Complete
+	err := middlewares.DecodeJSONBody(res, req, &completed)
+	if err != nil {
+		var mr *middlewares.MalformedRequest
+		if errors.As(err, &mr) {
+			http.Error(res, mr.Msg, mr.Status)
+		} else {
+			log.Print(err.Error())
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
 	params := mux.Vars(req)
 	todoId, err := primitive.ObjectIDFromHex(params["id"])
 	if err != nil {
@@ -220,7 +236,7 @@ func CompleteTodo(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("No id provided " + err.Error())
 		return
 	}
-	nModified, errMongo := database.CompleteTodo(todoId)
+	nModified, errMongo := database.CompleteTodo(todoId, completed.completed)
 	if errMongo != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errMongo.Error()))

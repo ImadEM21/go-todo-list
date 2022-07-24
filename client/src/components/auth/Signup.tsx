@@ -1,12 +1,12 @@
 import React, { useContext, useState } from 'react';
 import { Button, Modal, Box, Typography, styled, TextField, Alert } from '@mui/material';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { isValidEmail } from './Login';
+import { isValidEmail, LocationState } from './Login';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import { AuthContext } from '../contexts/AuthContext';
 import { ISignup, UserContextType } from '../../@types/user';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface ISignupProps {}
 
@@ -91,6 +91,8 @@ const Form = styled('form')(({ theme }) => ({
 
 const Signup: React.FC<ISignupProps> = (props) => {
     const { signup } = useContext(AuthContext) as UserContextType;
+    const location = useLocation();
+    const { from } = (location?.state as LocationState) || { pathname: '/dashboard' };
     const formSchema = Yup.object().shape({
         password: Yup.string().required('Le mot de passe est obligatoire').min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
         confirmPwd: Yup.string()
@@ -130,7 +132,7 @@ const Signup: React.FC<ISignupProps> = (props) => {
         };
         try {
             await signup(payload);
-            navigate('/dashboard');
+            navigate(from ? from.pathname : '/dashboard');
         } catch (e) {
             setErrorMessage(e);
             setError(true);
