@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import { ITodo } from '../../@types/todo';
 import { IconButton, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, CircularProgress, Snackbar } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Transition } from './Details';
+import { Transition } from './DialogDetails';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
 import { AuthContext } from '../contexts/AuthContext';

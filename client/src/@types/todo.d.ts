@@ -2,7 +2,7 @@ export interface ITodo {
     _id: string;
     title: string;
     description: string;
-    endDate: Date;
+    endDate: STRING;
     completed: boolean;
     createdAt: Date;
     updatedAt: Date;

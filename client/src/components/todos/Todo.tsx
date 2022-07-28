@@ -97,7 +97,7 @@ const Todo = ({ todo }: ITodoProps) => {
                         {loading ? (
                             <CircularProgress color="info" />
                         ) : (
-                            <Checkbox edge="start" defaultChecked={todo.completed} tabIndex={-1} color="info" disableRipple inputProps={{ 'aria-labelledby': labelId }} />
+                            <Checkbox edge="start" checked={todo.completed} tabIndex={-1} color="info" disableRipple inputProps={{ 'aria-labelledby': labelId }} />
                         )}
                     </ListItemIcon>
                     <ListItemText id={`title-${todo._id}`} primary={todo.title} />

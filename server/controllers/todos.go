@@ -139,7 +139,7 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateTodo(res http.ResponseWriter, req *http.Request) {
-	var todo database.Todo
+	var todo *database.Todo
 	err := middlewares.DecodeJSONBody(res, req, &todo)
 	if err != nil {
 		var mr *middlewares.MalformedRequest
@@ -161,7 +161,7 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 	}
 	*&todo.ID = todoId
 	*&todo.UpdatedAt = time.Now()
-	nModified, errMongo := database.UpdateTodo(&todo, todoId)
+	nModified, errMongo := database.UpdateTodo(todo, todoId)
 	if errMongo != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errMongo.Error()))
