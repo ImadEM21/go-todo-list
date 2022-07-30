@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { ITodo } from '../../@types/todo';
-import { ListItemButton } from '@mui/material';
+import { TableRow } from '@mui/material';
 import DialogDetails from './DialogDetails';
 
 export interface IDetailsProps {
@@ -17,9 +17,18 @@ const Details = ({ todo, children }: IDetailsProps) => {
 
     return (
         <>
-            <ListItemButton role={undefined} onClick={handleClickOpen} dense>
+            <TableRow
+                sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    cursor: 'pointer',
+                    '&:hover': {
+                        backgroundColor: '#E8E8E8'
+                    }
+                }}
+                onClick={handleClickOpen}
+            >
                 {children}
-            </ListItemButton>
+            </TableRow>
 
             {open && <DialogDetails open={open} setOpen={setOpen} todo={todo} />}
         </>

@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, forwardRef } from 'react';
 import { ITodo } from '../../@types/todo';
 import { IconButton, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, CircularProgress, Snackbar } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -7,7 +7,11 @@ import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
-import { Alert } from './Todo';
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+
+const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 export interface IDeleteProps {
     todo: ITodo;
@@ -23,7 +27,8 @@ const Delete = ({ todo }: IDeleteProps) => {
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const handleClickOpen = () => {
+    const handleClickOpen = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.stopPropagation();
         setOpen(true);
     };
 
@@ -66,7 +71,7 @@ const Delete = ({ todo }: IDeleteProps) => {
     return (
         <>
             <IconButton edge="end" aria-label="delete" onClick={handleClickOpen}>
-                <DeleteIcon />
+                <DeleteIcon color="error" />
             </IconButton>
 
             <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="delete-todo" scroll="paper" TransitionComponent={Transition}>
@@ -79,10 +84,10 @@ const Delete = ({ todo }: IDeleteProps) => {
                         <CircularProgress color="info" />
                     ) : (
                         <>
-                            <Button autoFocus onClick={handleClose}>
+                            <Button autoFocus color="info" onClick={handleClose}>
                                 Annuler
                             </Button>
-                            <Button onClick={handleDelete} autoFocus>
+                            <Button onClick={handleDelete} color="info" autoFocus>
                                 Supprimer
                             </Button>
                         </>

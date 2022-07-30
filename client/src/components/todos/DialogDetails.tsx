@@ -28,7 +28,7 @@ interface IDialogDetailsProps {
     todo: ITodo;
 }
 
-type Inputs = {
+export type Inputs = {
     title: string;
     completed: boolean;
 };

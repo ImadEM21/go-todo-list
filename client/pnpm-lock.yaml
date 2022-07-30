@@ -9,6 +9,7 @@ specifiers:
   '@mui/material': ^5.9.1
   '@mui/system': ^5.9.2
   '@mui/x-date-pickers': 5.0.0-beta.2
+  '@types/prop-types': ^15.7.5
   '@types/react': ^18.0.15
   '@types/react-dom': ^18.0.6
   '@types/uuid': ^8.3.4
@@ -38,6 +39,7 @@ dependencies:
   '@mui/material': 5.9.1_bl6qrq6463ovzmqn4cmwv7vydq
   '@mui/system': 5.9.2_kgoqblbzxlux4bm4vftowiq75m
   '@mui/x-date-pickers': 5.0.0-beta.2_ig3p3mshzoaddsvd4p77ov7ifa
+  '@types/prop-types': 15.7.5
   axios: 0.27.2
   date-fns: 2.29.1
   jodit: 3.19.1
