@@ -6,6 +6,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { Typography, useTheme, Grid, Button } from '@mui/material';
 import TodosTable from './TodosTable';
 import AddIcon from '@mui/icons-material/Add';
+import CreateTodo from './CreateTodo';
 
 export interface ITodosProps {}
 
@@ -34,9 +35,7 @@ const Todos = (props: ITodosProps) => {
                     </Typography>
                 </Grid>
                 <Grid item xs={12} md={6} display="flex" flexDirection="column" alignSelf="center">
-                    <Button variant="contained" color="info" startIcon={<AddIcon />} sx={{ width: 'fit-content', mx: 'auto' }}>
-                        Nouvelle tâche
-                    </Button>
+                    <CreateTodo />
                 </Grid>
             </Grid>
             <TodosTable todos={todos} />

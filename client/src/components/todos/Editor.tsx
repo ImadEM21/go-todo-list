@@ -18,7 +18,7 @@ const Editor = ({ description, setDescription }: IEditorProps) => {
             openInNewTabCheckbox: true
         },
         language: 'fr',
-        placeholder: 'Écrivez ici...',
+        placeholder: 'Description de la tâche...',
         readonly: false
     };
 

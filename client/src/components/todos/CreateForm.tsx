@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useContext } from 'react';
+import React, { useState, forwardRef, useContext, useEffect } from 'react';
 import { ITodo } from '../../@types/todo';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, Slide, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
@@ -18,14 +18,23 @@ export interface ICreateFormProps {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+const PREFIX = 'CreateForm';
+
+const classes = {
+    helper: `${PREFIX}-helper`
+};
+
 const Form = styled('form')(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem'
+    gap: '1rem',
+    [`& .${classes.helper}`]: {
+        color: theme.palette.text.primary
+    }
 }));
 
 const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
-    const { updateTodo } = useContext(TodoContext) as TodoContextType;
+    const { createTodo } = useContext(TodoContext) as TodoContextType;
     const { user } = useContext(AuthContext) as UserContextType;
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -36,12 +45,13 @@ const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
     } = useForm<Inputs>({ mode: 'onBlur', defaultValues: { title: '', completed: false } });
     const [description, setDescription] = useState<string>('');
     const [endDate, setEndDate] = useState<Date | null>(new Date());
-    const [disabled, setDisabled] = useState(true);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
 
-    const onSubmit = async (data: Inputs) => {};
+    const onSubmit = async (data: Inputs) => {
+        setLoading(true);
+    };
 
     const handleChange = (newValue: Date | null) => {
         setEndDate(newValue);
@@ -55,7 +65,18 @@ const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
                     <CircularProgress />
                 ) : (
                     <Form onSubmit={handleSubmit(onSubmit)} id="new-todo">
-                        <TextField {...register('title', { required: true })} label="Titre" type="text" color="info" variant="filled" required />
+                        <TextField
+                            {...register('title', { required: true })}
+                            helperText={errors.title && 'Le titre est obligatoire'}
+                            label="Titre"
+                            type="text"
+                            color="info"
+                            variant="filled"
+                            required
+                            FormHelperTextProps={{
+                                className: classes.helper
+                            }}
+                        />
                         <div style={{ minWidth: '600px' }}>
                             <Editor description={description} setDescription={setDescription} />
                         </div>
@@ -68,7 +89,7 @@ const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
                                 renderInput={(params) => <TextField {...params} variant="filled" color="info" required />}
                             />
                         </LocalizationProvider>
-                        <FormControlLabel label="Tâche finie" control={<Checkbox {...register('completed')} defaultChecked={false} color="info" />} />
+                        <FormControlLabel label="Tâche terminée" control={<Checkbox {...register('completed')} defaultChecked={false} color="info" />} />
                     </Form>
                 )}
             </DialogContent>
@@ -81,14 +102,14 @@ const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
                     )}
                     {success && (
                         <Alert severity="success" onClose={() => setSuccess(false)} sx={{ mx: 4 }}>
-                            La Todo a bien été mise à jour
+                            La Todo a bien été créée
                         </Alert>
                     )}
                     <Button autoFocus color="info" onClick={() => setOpen(false)}>
                         Annuler
                     </Button>
-                    <Button type="submit" form="new-todo" color="info" disabled={disabled} autoFocus>
-                        Mettre à jour
+                    <Button type="submit" form="new-todo" color="info" autoFocus>
+                        Créer une nouvelle Todo
                     </Button>
                 </DialogActions>
             )}

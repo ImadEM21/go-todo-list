@@ -136,7 +136,7 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
                                 renderInput={(params) => <TextField {...params} variant="filled" color="info" required />}
                             />
                         </LocalizationProvider>
-                        <FormControlLabel label="Tâche finie" control={<Checkbox {...register('completed')} defaultChecked={todo.completed} color="info" />} />
+                        <FormControlLabel label="Tâche terminée" control={<Checkbox {...register('completed')} defaultChecked={todo.completed} color="info" />} />
                     </Form>
                 )}
             </DialogContent>
