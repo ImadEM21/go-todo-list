@@ -1,7 +1,6 @@
-import React, { useState, forwardRef, useContext, useEffect } from 'react';
-import { ITodo } from '../../@types/todo';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, Slide, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
+import React, { useState, useContext } from 'react';
+import { CreateTodo } from '../../@types/todo';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import Editor from './Editor';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
@@ -12,10 +11,12 @@ import { TodoContextType } from '../../@types/todo';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
 import { Transition, Inputs } from './DialogDetails';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface ICreateFormProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const PREFIX = 'CreateForm';
@@ -33,7 +34,9 @@ const Form = styled('form')(({ theme }) => ({
     }
 }));
 
-const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
+const CreateForm = ({ open, setOpen, setSuccess }: ICreateFormProps) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const { createTodo } = useContext(TodoContext) as TodoContextType;
     const { user } = useContext(AuthContext) as UserContextType;
     const theme = useTheme();
@@ -41,16 +44,36 @@ const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
     const {
         register,
         handleSubmit,
-        formState: { errors, isDirty }
+        formState: { errors }
     } = useForm<Inputs>({ mode: 'onBlur', defaultValues: { title: '', completed: false } });
     const [description, setDescription] = useState<string>('');
     const [endDate, setEndDate] = useState<Date | null>(new Date());
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
 
     const onSubmit = async (data: Inputs) => {
+        if (!user) {
+            navigate('/', { state: { from: location }, replace: true });
+            return;
+        }
         setLoading(true);
+        const payload: CreateTodo = {
+            ...data,
+            description,
+            endDate: endDate ? endDate?.toISOString() : new Date().toISOString(),
+            userId: user._id
+        };
+        payload.completed = /true/i.test(data.completed.toString());
+        try {
+            await createTodo(payload, user._id);
+            setOpen(false);
+            setSuccess(true);
+        } catch (error) {
+            console.error({ error });
+            setError(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleChange = (newValue: Date | null) => {
@@ -98,11 +121,6 @@ const CreateForm = ({ open, setOpen }: ICreateFormProps) => {
                     {error && (
                         <Alert severity="error" onClose={() => setError(false)} sx={{ mx: 4 }}>
                             Un problème est survenu, veuillez réessayer
-                        </Alert>
-                    )}
-                    {success && (
-                        <Alert severity="success" onClose={() => setSuccess(false)} sx={{ mx: 4 }}>
-                            La Todo a bien été créée
                         </Alert>
                     )}
                     <Button autoFocus color="info" onClick={() => setOpen(false)}>

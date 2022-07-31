@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ITodo, Complete } from '../@types/todo';
+import { ITodo, Complete, CreateTodo } from '../@types/todo';
 
 const token = localStorage.getItem('chillingbook-user-token');
 
@@ -19,7 +19,7 @@ export const getTodo = (todoId: string) => {
     return api.get(`/${todoId}`);
 };
 
-export const createTodo = (todo: ITodo) => {
+export const createTodo = (todo: CreateTodo) => {
     return api.post('/', todo);
 };
 

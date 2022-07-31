@@ -25,12 +25,20 @@ export type Complete = {
     completed: boolean;
 };
 
+export type CreateTodo = {
+    title: string;
+    description: string;
+    endDate: string;
+    completed: boolean;
+    userId: string;
+};
+
 export type TodoContextType = {
     todos: ITodo[];
     getTodos: (userId: string) => Promise<ITodo[]>;
     getTodo: (todoId: string) => Promise<ITodo>;
     updateTodo: (todo: ITodo, userId: string) => Promise<TodoModified>;
     deleteTodo: (id: string, userId: string) => Promise<TodoDeleted>;
-    createTodo: (todo: ITodo, userId: stirng) => Promise<TodoCreated>;
+    createTodo: (todo: CreateTodo, userId: stirng) => Promise<TodoCreated>;
     completeTodo: (id: string, payload: Complete, userId: string) => Promise<TodoModified>;
 };

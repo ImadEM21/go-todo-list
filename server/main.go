@@ -4,20 +4,29 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	routes "todo-list-api/routes"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/kamva/mgm/v3"
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
 	envErr := godotenv.Load()
 	if envErr != nil {
 		log.Println("No .env file found")
+	}
+
+	uri := os.Getenv("MONGODB_URI")
+	errMongo := mgm.SetDefaultConfig(nil, "todos", options.Client().ApplyURI(uri))
+	if errMongo != nil {
+		log.Fatal(errMongo)
 	}
 	router := mux.NewRouter().StrictSlash(false)
 

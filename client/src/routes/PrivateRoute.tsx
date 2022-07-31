@@ -1,5 +1,5 @@
-import { useContext, ReactNode } from 'react';
-import { Route, Navigate, useLocation } from 'react-router-dom';
+import { useContext } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../components/contexts/AuthContext';
 import { UserContextType } from '../@types/user';
 

@@ -12,6 +12,7 @@ import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -55,6 +56,8 @@ const Form = styled('form')(({ theme }) => ({
 }));
 
 const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const { updateTodo } = useContext(TodoContext) as TodoContextType;
     const { user } = useContext(AuthContext) as UserContextType;
     const theme = useTheme();
@@ -72,6 +75,10 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
     const [error, setError] = useState(false);
 
     const onSubmit = async (data: Inputs) => {
+        if (!user) {
+            navigate('/', { state: { from: location }, replace: true });
+            return;
+        }
         setLoading(true);
         const payload: ITodo = {
             ...todo,
@@ -81,7 +88,6 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
         };
         payload.completed = /true/i.test(data.completed.toString());
         try {
-            if (!user) throw new Error('Vous devez être connecté pour réaliser cette opération');
             const res = await updateTodo(payload, user._id);
             if (res.nModified > 0) {
                 setSuccess(true);

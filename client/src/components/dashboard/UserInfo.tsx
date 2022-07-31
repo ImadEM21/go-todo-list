@@ -38,11 +38,19 @@ const Root = styled(Grid)(({ theme }) => ({
     },
     [`& .${classes.headerUser}`]: {
         display: 'flex',
-        justifyContent: 'end',
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: '6px',
         paddingLeft: '1rem',
-        paddingRight: '1rem'
+        paddingRight: '1rem',
+        backgroundColor: theme.palette.text.secondary,
+        borderRadius: '25px',
+        boxShadow: 3,
+        marginTop: '.5rem',
+        marginBottom: '.5rem',
+        [theme.breakpoints.down(1030)]: {
+            width: '96px',
+            boxShadow: '0'
+        }
     }
 }));
 
@@ -96,39 +104,24 @@ const UserInfo = (props: IUserInfoProps) => {
                     {props.title}
                 </Typography>
             </Grid>
-            <Grid
-                item={true}
-                className={classes.headerUser}
-                sx={{
-                    borderRadius: '25px',
-                    boxShadow: 3,
-                    marginTop: '.5rem',
-                    marginBottom: '.5rem',
-                    [theme.breakpoints.down(1030)]: {
-                        width: '96px',
-                        boxShadow: '0'
-                    }
-                }}
-            >
-                <Grid item={true} container={true} direction="column" alignItems="flex-end" sx={{ width: '8rem' }}>
-                    {user && (
-                        <Typography
-                            variant="subtitle1"
-                            component="div"
-                            sx={{
-                                color: theme.palette.text.primary,
-                                fontWeight: 'bold',
-                                marginBottom: '0',
-                                paddingBottom: '0',
-                                [theme.breakpoints.down(1030)]: {
-                                    display: 'none'
-                                }
-                            }}
-                        >
-                            {capitalizeFirstLetter(user.firstName)} {user.lastName.toUpperCase()}
-                        </Typography>
-                    )}
-                </Grid>
+            <Grid item className={classes.headerUser}>
+                {user && (
+                    <Typography
+                        variant="subtitle1"
+                        component="div"
+                        sx={{
+                            color: theme.palette.primary.light,
+                            fontWeight: 'bold',
+                            marginBottom: '0',
+                            paddingBottom: '0',
+                            [theme.breakpoints.down(1030)]: {
+                                display: 'none'
+                            }
+                        }}
+                    >
+                        {capitalizeFirstLetter(user.firstName)} {user.lastName.toUpperCase()}
+                    </Typography>
+                )}
                 <IconButton color="info" onClick={() => navigate('/settings')} aria-describedby={user ? `${user.firstName} ${user.lastName.toUpperCase()}` : 'Utilisateur'}>
                     <AccountCircleIcon fontSize="large" />
                 </IconButton>

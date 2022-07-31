@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { TodoContextType, ITodo, TodoCreated, TodoModified, Complete, TodoDeleted } from '../../@types/todo';
+import { TodoContextType, ITodo, TodoCreated, TodoModified, Complete, TodoDeleted, CreateTodo } from '../../@types/todo';
 import todosApi from '../../api/todos';
 import axios from 'axios';
 
@@ -59,7 +59,7 @@ const TodoProvider: React.FC<Props> = ({ children }) => {
         });
     };
 
-    const createTodo = (todo: ITodo, userId: string) => {
+    const createTodo = (todo: CreateTodo, userId: string) => {
         return new Promise<TodoCreated>(async (resolve, reject) => {
             try {
                 const res = await todosApi.createTodo(todo);
