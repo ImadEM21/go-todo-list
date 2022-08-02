@@ -11,8 +11,8 @@ const api = axios.create({
     baseURL: path
 });
 
-export const getTodos = (userId: string) => {
-    return api.get('/', { params: { userId } });
+export const getTodos = (userId: string, limit: number, page: number) => {
+    return api.get('/', { params: { userId, limit, page } });
 };
 
 export const getTodo = (todoId: string) => {
@@ -35,13 +35,18 @@ export const deleteTodo = (todoId: string) => {
     return api.delete(`/${todoId}`);
 };
 
+export const getLastCompleted = (userId: string) => {
+    return api.get(`/${userId}/completed`);
+};
+
 const todosApi = {
     getTodos,
     getTodo,
     createTodo,
     updateTodo,
     deleteTodo,
-    completeTodo
+    completeTodo,
+    getLastCompleted
 };
 
 export default todosApi;

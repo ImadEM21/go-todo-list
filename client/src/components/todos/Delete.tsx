@@ -5,8 +5,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Transition } from './DialogDetails';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
-import { AuthContext } from '../contexts/AuthContext';
-import { UserContextType } from '../../@types/user';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
@@ -19,7 +17,6 @@ export interface IDeleteProps {
 
 const Delete = ({ todo }: IDeleteProps) => {
     const { deleteTodo } = useContext(TodoContext) as TodoContextType;
-    const { user } = useContext(AuthContext) as UserContextType;
     const [open, setOpen] = useState(false);
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -55,8 +52,7 @@ const Delete = ({ todo }: IDeleteProps) => {
     const handleDelete = async () => {
         setLoading(true);
         try {
-            if (!user) throw new Error('Vous devez être connecté pour réaliser cette opération');
-            const res = await deleteTodo(todo._id, user._id);
+            const res = await deleteTodo(todo._id);
             if (res.nDeleted > 0) {
                 setSuccess(true);
             }

@@ -65,7 +65,7 @@ const CreateForm = ({ open, setOpen, setSuccess }: ICreateFormProps) => {
         };
         payload.completed = /true/i.test(data.completed.toString());
         try {
-            await createTodo(payload, user._id);
+            await createTodo(payload);
             setOpen(false);
             setSuccess(true);
         } catch (error) {

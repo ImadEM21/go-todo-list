@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useContext } from 'react';
 import { styled, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow } from '@mui/material';
 import TablePaginationActions from './TablePaginationActions';
 import { ITodo } from '../../@types/todo';
 import TodoCell from './TodoCell';
 import { useTheme } from '@mui/material';
+import { TodoContext } from '../contexts/TodosContext';
+import { TodoContextType } from '../../@types/todo';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
     '& .MuiTablePagination-selectLabel': {
@@ -20,9 +22,7 @@ export interface ITodosTableProps {
 }
 
 const TodosTable = ({ todos }: ITodosTableProps) => {
-    const [total, setTotal] = useState(todos.length);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const { total, page, limit, setPage, setLimit } = useContext(TodoContext) as TodoContextType;
     const theme = useTheme();
 
     const handleChangePage = (event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null, newPage: number) => {
@@ -30,7 +30,7 @@ const TodosTable = ({ todos }: ITodosTableProps) => {
     };
 
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
+        setLimit(parseInt(event.target.value, 10));
         setPage(0);
     };
 
@@ -74,7 +74,7 @@ const TodosTable = ({ todos }: ITodosTableProps) => {
                                 labelRowsPerPage="Lignes par page"
                                 colSpan={3}
                                 count={total}
-                                rowsPerPage={rowsPerPage}
+                                rowsPerPage={limit}
                                 page={page}
                                 SelectProps={{
                                     inputProps: {

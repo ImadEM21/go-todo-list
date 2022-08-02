@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	database "todo-list-api/database"
@@ -26,7 +27,52 @@ func GetTodos(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("No user id provided " + err.Error())
 		return
 	}
-	todos, err := database.GetTodos(userId)
+	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
+	if errLimit != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + err.Error())
+		return
+	}
+	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
+	if errPage != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + err.Error())
+		return
+	}
+	todos, total, err := database.GetTodos(userId, limit, page)
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(err.Error()))
+		return
+	}
+
+	json := simplejson.New()
+	json.Set("todos", todos)
+	json.Set("total", total)
+
+	payload, errJson := json.MarshalJSON()
+	if errJson != nil {
+		log.Println(errJson)
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payload)
+	return
+}
+
+func GetLastCompleted(res http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	userId, err := primitive.ObjectIDFromHex(params["userId"])
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No user id provided " + err.Error())
+		return
+	}
+	data, err := database.GetLastCompleted(userId)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
@@ -34,7 +80,7 @@ func GetTodos(res http.ResponseWriter, req *http.Request) {
 	}
 	res.WriteHeader(http.StatusOK)
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(todos)
+	json.NewEncoder(res).Encode(data)
 	return
 }
 
@@ -82,12 +128,6 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 	if len(todo.Title) < 1 {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Le titre est obligatoire"))
-		return
-	}
-
-	if len(todo.Description) < 1 {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("La description est obligatoire"))
 		return
 	}
 
@@ -161,6 +201,9 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 	}
 	*&todo.ID = todoId
 	*&todo.UpdatedAt = time.Now()
+	if todo.Completed {
+		*&todo.CompletedDate = time.Now()
+	}
 	nModified, errMongo := database.UpdateTodo(todo, todoId)
 	if errMongo != nil {
 		res.WriteHeader(http.StatusBadRequest)

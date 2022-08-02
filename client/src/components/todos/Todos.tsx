@@ -3,9 +3,8 @@ import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
 import DashWrapper from '../dashboard/DashWrapper';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import { Typography, useTheme, Grid, Button } from '@mui/material';
+import { Typography, useTheme, Grid } from '@mui/material';
 import TodosTable from './TodosTable';
-import AddIcon from '@mui/icons-material/Add';
 import CreateTodo from './CreateTodo';
 
 export interface ITodosProps {}

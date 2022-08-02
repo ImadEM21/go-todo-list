@@ -6,8 +6,6 @@ import Details from './Details';
 import Delete from './Delete';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
-import { UserContextType } from '../../@types/user';
-import { AuthContext } from '../contexts/AuthContext';
 import { getStatusTodo, Status } from '../../utils/funcs';
 import { useTheme } from '@mui/material';
 
@@ -21,7 +19,6 @@ export interface ITodoCellProps {
 
 const TodoCell = ({ todo }: ITodoCellProps) => {
     const { completeTodo } = useContext(TodoContext) as TodoContextType;
-    const { user } = useContext(AuthContext) as UserContextType;
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
@@ -33,8 +30,7 @@ const TodoCell = ({ todo }: ITodoCellProps) => {
         e.stopPropagation();
         setLoading(true);
         try {
-            if (!user) throw new Error('Vous devez être connecté pour réaliser cette opération');
-            const res = await completeTodo(todo._id, { completed: !todo.completed }, user?._id);
+            const res = await completeTodo(todo._id, { completed: !todo.completed });
             if (res.nModified > 0) setOpen(true);
         } catch (error) {
             console.error({ error });
