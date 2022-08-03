@@ -26,79 +26,74 @@ type GraphData struct {
 	Total int64     `json:"total"`
 }
 
-func GetTodos(userId primitive.ObjectID, limit int64, page int64) ([]*Todo, int64, error) {
+func GetTodos(userId primitive.ObjectID, limit int64, page int64) ([]*Todo, int64, int64, int64, []*GraphData, error) {
 	client, ctx := InitDb()
 	defer CloseDb(&client, ctx)
 	var todos []*Todo
+	var data []*GraphData
 
 	coll := client.Database("todos").Collection("todos")
 	filter := bson.D{{Key: "userId", Value: userId}}
+	count, errCount := coll.CountDocuments(ctx, filter)
+	if errCount != nil {
+		return todos, 0, 0, 0, make([]*GraphData, 0), errCount
+	}
+
+	filterUncompleted := bson.D{{Key: "userId", Value: userId}, {Key: "completed", Value: false}}
+	uncompleted, errCompleted := coll.CountDocuments(ctx, filterUncompleted)
+	if errCompleted != nil {
+		return todos, 0, 0, 0, make([]*GraphData, 0), errCompleted
+	}
+
+	filterLate := bson.D{{Key: "userId", Value: userId}, {Key: "completed", Value: false}, {Key: "endDate", Value: bson.M{"$lt": time.Now()}}}
+	late, errLate := coll.CountDocuments(ctx, filterLate)
+	if errLate != nil {
+		return todos, 0, 0, 0, make([]*GraphData, 0), errLate
+	}
+
+	for i := -7; i < 0; i++ {
+		filter := bson.D{{Key: "userId", Value: userId}, {Key: "completed", Value: true}, {Key: "completedDate", Value: bson.D{{Key: "$gte", Value: primitive.NewDateTimeFromTime(time.Now().AddDate(0, 0, i))}, {Key: "$lt", Value: primitive.NewDateTimeFromTime(time.Now().AddDate(0, 0, i+1))}}}}
+		count, err := coll.CountDocuments(ctx, filter)
+		if err != nil {
+
+		}
+		elt := GraphData{
+			Date:  time.Now().AddDate(0, 0, i),
+			Total: count,
+		}
+		data = append(data, &elt)
+
+	}
+
 	opts := options.Find()
 	skips := limit * (page - 1)
 	opts.SetLimit(limit)
 	opts.SetSkip(skips)
 	opts.SetSort(bson.D{{Key: "endDate", Value: 1}})
-	count, err := coll.CountDocuments(ctx, filter)
-	if err != nil {
-		return todos, 0, err
-	}
-	cur, err := coll.Find(ctx, filter, opts)
-	if err != nil {
-		return todos, 0, err
+	cur, errQuery := coll.Find(ctx, filter, opts)
+	if errQuery != nil {
+		return todos, 0, 0, 0, make([]*GraphData, 0), errQuery
 	}
 	for cur.Next(ctx) {
 		var todo Todo
 		err := cur.Decode(&todo)
 		if err != nil {
-			return todos, 0, err
+			return todos, 0, 0, 0, make([]*GraphData, 0), err
 		}
 		todos = append(todos, &todo)
 	}
 	curErr := cur.Err()
 	if curErr != nil {
-		return todos, 0, curErr
+		return todos, 0, 0, 0, make([]*GraphData, 0), curErr
 	}
 
 	cur.Close(ctx)
 
 	if len(todos) == 0 {
-		return make([]*Todo, 0), 0, nil
+		return make([]*Todo, 0), 0, 0, 0, make([]*GraphData, 0), nil
 	}
 
-	return todos, count, nil
-}
-
-func GetLastCompleted(userId primitive.ObjectID) ([]*GraphData, error) {
-	client, ctx := InitDb()
-	defer CloseDb(&client, ctx)
-	var data []*GraphData
-	coll := client.Database("todos").Collection("todos")
-	filter := bson.D{{Key: "userId", Value: userId}, {Key: "completed", Value: true}, {Key: "completedDate", Value: bson.M{"$gte": primitive.NewDateTimeFromTime(time.Now().AddDate(-7, 0, 0))}}}
-
-	cur, err := coll.Find(ctx, filter)
-	if err != nil {
-		return make([]*GraphData, 0), err
-	}
-	for cur.Next(ctx) {
-		var graphData GraphData
-		err := cur.Decode(&graphData)
-		if err != nil {
-			return make([]*GraphData, 0), err
-		}
-		data = append(data, &graphData)
-	}
-	curErr := cur.Err()
-	if curErr != nil {
-		return make([]*GraphData, 0), curErr
-	}
-
-	cur.Close(ctx)
-
-	if len(data) == 0 {
-		return make([]*GraphData, 0), nil
-	}
-
-	return data, nil
+	return todos, count, uncompleted, late, data, nil
 }
 
 func GetTodo(todoId primitive.ObjectID) (*Todo, error) {

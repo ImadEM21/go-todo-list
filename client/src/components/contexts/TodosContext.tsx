@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 import { TodoContextType, ITodo, TodoCreated, TodoModified, Complete, TodoDeleted, CreateTodo, GetTodos, GraphData } from '../../@types/todo';
 import todosApi from '../../api/todos';
 import axios from 'axios';
@@ -31,15 +31,21 @@ const TodoProvider: React.FC<Props> = ({ children }) => {
         parsed = JSON.parse(todoStorage);
     }
     let totalStorage = localStorage.getItem('todos-total');
-    const [todos, setTodos] = useState<ITodo[]>(parsed ? parsed : []);
+    let lastCompletedStorage = localStorage.getItem('todos-lastCompleted');
+    let completedParsed = null;
+    if (lastCompletedStorage) {
+        completedParsed = JSON.parse(lastCompletedStorage);
+    }
+    const [todos, setTodos] = useState<ITodo[]>(parsed ?? []);
     const [total, setTotal] = useState(totalStorage ? parseInt(totalStorage) : 0);
     const [page, setPage] = useState(0);
     const [limit, setLimit] = useState(5);
+    const [uncompleted, setUncompleted] = useState(0);
+    const [late, setLate] = useState(0);
+    const [lastCompleted, setLastCompleted] = useState<GraphData[]>(completedParsed ?? []);
 
     useEffectDebugger(
         (changedDeps: Deps) => {
-            //const pageHasChanged = changedDeps?.page?.before === undefined;
-            //const limitHasChanged = changedDeps?.limit?.before === undefined;
             if ((changedDeps.limit || changedDeps.page) && user) {
                 getTodos(user?._id);
             }
@@ -52,11 +58,16 @@ const TodoProvider: React.FC<Props> = ({ children }) => {
         return new Promise<GetTodos>(async (resolve, reject) => {
             try {
                 const res = await todosApi.getTodos(userId, limit, page + 1);
+                const lastCompletedParsed: GraphData[] = res.data.lastCompleted.map((elt: GraphData) => ({ date: new Date(elt.date).toLocaleDateString(), total: elt.total }));
                 localStorage.setItem('todos-obj', JSON.stringify(res.data.todos));
                 localStorage.setItem('todos-total', res.data.total);
-                setTodos(res.data.todos);
-                setTotal(res.data.total);
-                resolve({ todos: res.data.todos, total: res.data.total });
+                localStorage.setItem('todos-lastCompleted', JSON.stringify(lastCompletedParsed));
+                setTodos(res.data.todos ?? []);
+                setTotal(res.data.total ?? 0);
+                setUncompleted(res.data.uncompleted ?? 0);
+                setLate(res.data.late ?? 0);
+                setLastCompleted(lastCompletedParsed ?? []);
+                resolve({ todos: res.data.todos, total: res.data.total, uncompleted: res.data.uncompleted, late: res.data.late, lastCompleted: lastCompletedParsed });
             } catch (error) {
                 if (axios.isAxiosError(error)) {
                     console.error('error message: ', error.message);
@@ -180,29 +191,8 @@ const TodoProvider: React.FC<Props> = ({ children }) => {
         });
     };
 
-    const getLastCompleted = (userId: string) => {
-        return new Promise<GraphData[]>(async (resolve, reject) => {
-            try {
-                if (!user) throw new Error('Vous avez été déconnecté, veuillez vous reconnecter à nouveau.');
-                const res = await todosApi.getLastCompleted(userId);
-                resolve(res.data);
-            } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    console.error('error message: ', error.message);
-                    console.error('error response', error.response);
-                    // 👇️ error: AxiosError<any, any>
-                    reject(error.response?.data);
-                } else {
-                    console.error('unexpected error: ', error);
-                    reject(error);
-                    //reject(new Error('An error has occured', { cause: error as Error }));
-                }
-            }
-        });
-    };
-
     return (
-        <TodoContext.Provider value={{ todos, total, page, setPage, limit, setLimit, getTodos, getTodo, createTodo, updateTodo, deleteTodo, completeTodo, getLastCompleted }}>
+        <TodoContext.Provider value={{ todos, total, page, setPage, limit, setLimit, uncompleted, late, lastCompleted, getTodos, getTodo, createTodo, updateTodo, deleteTodo, completeTodo }}>
             {children}
         </TodoContext.Provider>
     );

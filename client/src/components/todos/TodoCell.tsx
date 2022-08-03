@@ -63,7 +63,19 @@ const TodoCell = ({ todo }: ITodoCellProps) => {
                     {loading ? (
                         <CircularProgress color="success" />
                     ) : (
-                        <Checkbox edge="start" onClick={handleComplete} checked={todo.completed} tabIndex={-1} color="success" disableRipple inputProps={{ 'aria-labelledby': labelId }} />
+                        <>
+                            <Checkbox edge="start" onClick={handleComplete} checked={todo.completed} tabIndex={-1} color="success" disableRipple inputProps={{ 'aria-labelledby': labelId }} />
+                            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                                    Le todo a été mise à jour avec succès
+                                </Alert>
+                            </Snackbar>
+                            <Snackbar open={error} autoHideDuration={6000} onClose={handleCloseError}>
+                                <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+                                    Un problème est survenu, veuillez réessayer.
+                                </Alert>
+                            </Snackbar>
+                        </>
                     )}
                 </TableCell>
                 <TableCell align="center" size="medium" sx={{ color: theme.palette.text.secondary }}>
@@ -79,16 +91,6 @@ const TodoCell = ({ todo }: ITodoCellProps) => {
                     <Delete todo={todo} />
                 </TableCell>
             </Details>
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-                    Le todo a été mise à jour avec succès
-                </Alert>
-            </Snackbar>
-            <Snackbar open={error} autoHideDuration={6000} onClose={handleCloseError}>
-                <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
-                    Un problème est survenu, veuillez réessayer.
-                </Alert>
-            </Snackbar>
         </>
     );
 };

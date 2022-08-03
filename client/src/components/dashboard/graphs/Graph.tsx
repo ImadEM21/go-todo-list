@@ -1,18 +1,20 @@
-import * as React from 'react';
+import { useContext } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { data } from './data';
 import { useTheme } from '@mui/material';
+import { TodoContext } from '../../contexts/TodosContext';
+import { TodoContextType } from '../../../@types/todo';
 
 export interface IGraphProps {}
 
-const Graph = (props: IGraphProps) => {
+const Graph = ({}: IGraphProps) => {
+    const { lastCompleted } = useContext(TodoContext) as TodoContextType;
     const theme = useTheme();
     return (
         <ResponsiveContainer width="100%" height="100%">
             <LineChart
                 width={500}
                 height={300}
-                data={data}
+                data={lastCompleted}
                 margin={{
                     top: 5,
                     right: 30,

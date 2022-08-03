@@ -35,18 +35,13 @@ export const deleteTodo = (todoId: string) => {
     return api.delete(`/${todoId}`);
 };
 
-export const getLastCompleted = (userId: string) => {
-    return api.get(`/${userId}/completed`);
-};
-
 const todosApi = {
     getTodos,
     getTodo,
     createTodo,
     updateTodo,
     deleteTodo,
-    completeTodo,
-    getLastCompleted
+    completeTodo
 };
 
 export default todosApi;

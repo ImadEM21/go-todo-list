@@ -13,6 +13,9 @@ export interface ITodo {
 export type GetTodos = {
     todos: ITodo[];
     total: number;
+    uncompleted: number;
+    late: number;
+    lastCompleted: GraphData[];
 };
 
 export type TodoCreated = {
@@ -51,11 +54,13 @@ export type TodoContextType = {
     setPage: React.Dispatch<React.SetStateAction<number>>;
     limit: number;
     setLimit: React.Dispatch<React.SetStateAction<number>>;
+    uncompleted: number;
+    late: number;
+    lastCompleted: GraphData[];
     getTodos: (userId: string) => Promise<GetTodos>;
     getTodo: (todoId: string) => Promise<ITodo>;
     updateTodo: (todo: ITodo) => Promise<TodoModified>;
     deleteTodo: (id: string) => Promise<TodoDeleted>;
     createTodo: (todo: CreateTodo) => Promise<TodoCreated>;
     completeTodo: (id: string, payload: Complete) => Promise<TodoModified>;
-    getLastCompleted: (userId: string) => Promise<GraphData[]>;
 };

@@ -39,7 +39,7 @@ func GetTodos(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + err.Error())
 		return
 	}
-	todos, total, err := database.GetTodos(userId, limit, page)
+	todos, total, uncompleted, late, lastCompleted, err := database.GetTodos(userId, limit, page)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
@@ -49,6 +49,9 @@ func GetTodos(res http.ResponseWriter, req *http.Request) {
 	json := simplejson.New()
 	json.Set("todos", todos)
 	json.Set("total", total)
+	json.Set("uncompleted", uncompleted)
+	json.Set("late", late)
+	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -61,26 +64,6 @@ func GetTodos(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Header().Set("Content-Type", "application/json")
 	res.Write(payload)
-	return
-}
-
-func GetLastCompleted(res http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	userId, err := primitive.ObjectIDFromHex(params["userId"])
-	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("No user id provided " + err.Error())
-		return
-	}
-	data, err := database.GetLastCompleted(userId)
-	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(err.Error()))
-		return
-	}
-	res.WriteHeader(http.StatusOK)
-	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(data)
 	return
 }
 

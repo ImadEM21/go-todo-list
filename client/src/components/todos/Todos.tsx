@@ -11,9 +11,7 @@ export interface ITodosProps {}
 
 const Todos = (props: ITodosProps) => {
     const theme = useTheme();
-    const { todos } = useContext(TodoContext) as TodoContextType;
-    const uncompleted = todos.filter((t) => !t.completed).length;
-    const late = todos.filter((t) => new Date(t.endDate).getTime() <= new Date().getTime() && !t.completed).length;
+    const { todos, uncompleted, late } = useContext(TodoContext) as TodoContextType;
     return (
         <DashWrapper title="MA TODO LIST" Icon={FormatListBulletedIcon}>
             <Grid container>
