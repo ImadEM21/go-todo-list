@@ -19,6 +19,7 @@ require (
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/kamva/mgm/v3 v3.4.1 // indirect
+	github.com/mailjet/mailjet-apiv3-go v0.0.0-20201009050126-c24bc15a9394 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect

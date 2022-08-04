@@ -34,6 +34,7 @@ func main() {
 
 	routes.HandleTodosRequest(router)
 	routes.HandleUsersRequest(router)
+	routes.HandleTokensRequest(router)
 
 	/*corsOpts := cors.Options{
 		AllowedHeaders: []string{"X-Requested-With", "Content-Type"},

@@ -137,3 +137,18 @@ func CheckIfUserExistsByEmail(email string) (bool, error) {
 	}
 	return true, nil
 }
+
+func GetUserByEmail(email string) (*User, error) {
+	client, ctx := InitDb()
+	defer CloseDb(&client, ctx)
+	var user *User
+	coll := client.Database("todos").Collection("users")
+	err := coll.FindOne(ctx, bson.D{{Key: "email", Value: email}}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return user, nil
+		}
+		return user, err
+	}
+	return user, nil
+}

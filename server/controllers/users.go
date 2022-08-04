@@ -201,7 +201,7 @@ func Login(res http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func validEmail(email string) bool {
+func ValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
 }
@@ -234,7 +234,7 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !validEmail(user.Email) {
+	if !ValidEmail(user.Email) {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("L'adresse mail n'est pas valide"))
 		return

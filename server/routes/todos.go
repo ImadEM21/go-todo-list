@@ -14,5 +14,5 @@ func HandleTodosRequest(router *mux.Router) *mux.Router {
 	s.HandleFunc("/{id}", controllers.UpdateTodo).Methods("PUT")
 	s.HandleFunc("/{id}", controllers.DeleteTodo).Methods("DELETE")
 	s.HandleFunc("/{id}/complete", controllers.CompleteTodo).Methods("PUT")
-	return router
+	return s
 }

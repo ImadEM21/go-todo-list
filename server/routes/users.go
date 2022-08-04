@@ -16,5 +16,5 @@ func HandleUsersRequest(router *mux.Router) *mux.Router {
 	s.HandleFunc("/login", controllers.Login).Methods("POST")
 	s.HandleFunc("/{id}", controllers.UpdateUser).Methods("PUT")
 	s.HandleFunc("/{id}", controllers.DeleteUser).Methods("DELETE")
-	return router
+	return s
 }
