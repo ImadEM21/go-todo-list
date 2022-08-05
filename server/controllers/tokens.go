@@ -15,13 +15,19 @@ import (
 	middlewares "todo-list-api/middlewares"
 
 	"github.com/bitly/go-simplejson"
+	"github.com/gorilla/mux"
 	"github.com/mailjet/mailjet-apiv3-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Email struct {
 	Email string `bson:"email" json:"email"`
+}
+
+type Password struct {
+	Password string `bson:"password" json:"password"`
 }
 
 func getToken(user *database.User) (*database.Token, error) {
@@ -154,5 +160,85 @@ func CreateToken(res http.ResponseWriter, req *http.Request) {
 }
 
 func ResetPassword(res http.ResponseWriter, req *http.Request) {
+	var password *Password
+	errJson := middlewares.DecodeJSONBody(res, req, &password)
+	if errJson != nil {
+		var mr *middlewares.MalformedRequest
+		if errors.As(errJson, &mr) {
+			http.Error(res, mr.Msg, mr.Status)
+		} else {
+			log.Print(errJson.Error())
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
+	params := mux.Vars(req)
+	userId, err := primitive.ObjectIDFromHex(params["userId"])
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + err.Error())
+		return
+	}
+	tokenStr := params["token"]
 
+	user, errUser := database.GetUser(userId)
+	if errUser != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("Lien invalide ou expiré")
+		return
+	}
+
+	token, errToken := database.GetToken(user.ID, tokenStr)
+	if errToken != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("Lien invalide ou expiré")
+		return
+	}
+
+	hash, errHash := bcrypt.GenerateFromPassword([]byte(password.Password), 10)
+	if errHash != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errHash.Error()))
+		return
+	}
+
+	newUser := &database.User{
+		ID:        user.ID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: time.Now(),
+		Email:     user.Email,
+		Password:  string(hash),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+	}
+	nModified, errUpdate := database.UpdateUser(newUser, userId)
+	if errUpdate != nil && nModified > 0 {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errUpdate.Error()))
+		return
+	}
+
+	nDeleted, errDelToken := database.DeleteToken(token.ID)
+	if errDelToken != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errDelToken.Error()))
+		return
+	}
+
+	json := simplejson.New()
+	json.Set("usersUpdated", nModified)
+	json.Set("tokensDeleted", nDeleted)
+
+	payload, errJson := json.MarshalJSON()
+	if errJson != nil {
+		log.Println(errJson)
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payload)
+	return
 }
