@@ -63,7 +63,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user, err := database.GetUser(userId, 0)
+	user, err := database.GetUser(userId, false)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
@@ -97,7 +97,7 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("No id provided " + errId.Error())
 		return
 	}
-	user, errUser := database.GetUser(userId, 1)
+	user, errUser := database.GetUser(userId, true)
 	if errUser != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(res).Encode(errUser.Error())
@@ -131,7 +131,7 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(errMongo.Error()))
 		return
 	}
-	updatedUser, errUpdate := database.GetUser(userId, 0)
+	updatedUser, errUpdate := database.GetUser(userId, false)
 	if errUpdate != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errUpdate.Error()))
@@ -176,7 +176,7 @@ func UpdatePassword(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user, errUser := database.GetUser(userId, 0)
+	user, errUser := database.GetUser(userId, false)
 	if errUser != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(res).Encode(errUser.Error())
@@ -205,7 +205,7 @@ func UpdatePassword(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(errMongo.Error()))
 		return
 	}
-	updatedUser, errUpdate := database.GetUser(userId, 0)
+	updatedUser, errUpdate := database.GetUser(userId, false)
 	if errUpdate != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errUpdate.Error()))

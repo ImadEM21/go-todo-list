@@ -181,7 +181,7 @@ func ResetPassword(res http.ResponseWriter, req *http.Request) {
 	}
 	tokenStr := params["token"]
 
-	user, errUser := database.GetUser(userId, 0)
+	user, errUser := database.GetUser(userId, false)
 	if errUser != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(res).Encode("Lien invalide ou expiré")
