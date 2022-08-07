@@ -5,6 +5,7 @@ const Home = lazy(() => import('../components/home/Home'));
 const Dashboard = lazy(() => import('../components/dashboard/Dashboard'));
 const Todos = lazy(() => import('../components/todos/Todos'));
 const NewPassword = lazy(() => import('../components/auth/NewPassword'));
+const Settings = lazy(() => import('../components/settings/Settings'));
 
 type Route = {
     id: string;
@@ -40,5 +41,14 @@ export const routes: Route[] = [
         id: uuidv4(),
         path: '/reinitialiser-mot-de-passe/:userId/:token',
         component: <NewPassword />
+    },
+    {
+        id: uuidv4(),
+        path: '/settings',
+        component: (
+            <PrivateRoute>
+                <Settings />
+            </PrivateRoute>
+        )
     }
 ];

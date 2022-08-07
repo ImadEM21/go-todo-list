@@ -31,6 +31,16 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+type UpdateUserInfo struct {
+	FirstName string `bson:"firstName" json:"firstName"`
+	LastName  string `bson:"lastName" json:"lastName"`
+	Email     string `bson:"email" json:"email"`
+}
+
+type UpdateUserPassword struct {
+	Password string `bson:"password" json:"password"`
+}
+
 func GetUsers(res http.ResponseWriter, req *http.Request) {
 	users, err := database.GetUsers()
 	if err != nil {
@@ -53,7 +63,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user, err := database.GetUser(userId)
+	user, err := database.GetUser(userId, 0)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
@@ -67,8 +77,8 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateUser(res http.ResponseWriter, req *http.Request) {
-	var user database.User
-	err := middlewares.DecodeJSONBody(res, req, &user)
+	var payload UpdateUserInfo
+	err := middlewares.DecodeJSONBody(res, req, &payload)
 	if err != nil {
 		var mr *middlewares.MalformedRequest
 		if errors.As(err, &mr) {
@@ -87,20 +97,52 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("No id provided " + errId.Error())
 		return
 	}
-	*&user.ID = userId
-	*&user.UpdatedAt = time.Now()
-	nModified, errMongo := database.UpdateUser(&user, userId)
+	user, errUser := database.GetUser(userId, 1)
+	if errUser != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode(errUser.Error())
+		return
+	}
+	if user.Email != payload.Email {
+		exists, errExists := database.CheckIfUserExistsByEmail(payload.Email)
+		if errExists != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(res).Encode(errExists.Error())
+			return
+		}
+		if exists {
+			res.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(res).Encode("L'adresse mail " + payload.Email + " est déjà utilisée")
+			return
+		}
+	}
+	var newUser = &database.User{
+		ID:        user.ID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: time.Now(),
+		Email:     payload.Email,
+		Password:  user.Password,
+		FirstName: payload.FirstName,
+		LastName:  payload.LastName,
+	}
+	nModified, errMongo := database.UpdateUser(newUser, userId)
 	if errMongo != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errMongo.Error()))
 		return
 	}
+	updatedUser, errUpdate := database.GetUser(userId, 0)
+	if errUpdate != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errUpdate.Error()))
+		return
+	}
 	json := simplejson.New()
+	json.Set("user", updatedUser)
 	json.Set("nModified", nModified)
 
-	payload, errJson := json.MarshalJSON()
+	payloadJson, errJson := json.MarshalJSON()
 	if errJson != nil {
-		log.Println(errJson)
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errJson.Error()))
 		return
@@ -108,7 +150,81 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 
 	res.WriteHeader(http.StatusOK)
 	res.Header().Set("Content-Type", "application/json")
-	res.Write(payload)
+	res.Write(payloadJson)
+	return
+}
+
+func UpdatePassword(res http.ResponseWriter, req *http.Request) {
+	var payload UpdateUserPassword
+	err := middlewares.DecodeJSONBody(res, req, &payload)
+	if err != nil {
+		var mr *middlewares.MalformedRequest
+		if errors.As(err, &mr) {
+			http.Error(res, mr.Msg, mr.Status)
+		} else {
+			log.Print(err.Error())
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	params := mux.Vars(req)
+	userId, errId := primitive.ObjectIDFromHex(params["id"])
+	if errId != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + errId.Error())
+		return
+	}
+
+	user, errUser := database.GetUser(userId, 0)
+	if errUser != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode(errUser.Error())
+		return
+	}
+
+	hash, errHash := bcrypt.GenerateFromPassword([]byte(payload.Password), 10)
+	if errHash != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errHash.Error()))
+		return
+	}
+
+	var newUser = &database.User{
+		ID:        user.ID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: time.Now(),
+		Email:     user.Email,
+		Password:  string(hash),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+	}
+	nModified, errMongo := database.UpdateUser(newUser, userId)
+	if errMongo != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errMongo.Error()))
+		return
+	}
+	updatedUser, errUpdate := database.GetUser(userId, 0)
+	if errUpdate != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errUpdate.Error()))
+		return
+	}
+	json := simplejson.New()
+	json.Set("user", updatedUser)
+	json.Set("nModified", nModified)
+
+	payloadJson, errJson := json.MarshalJSON()
+	if errJson != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payloadJson)
 	return
 }
 

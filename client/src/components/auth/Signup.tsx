@@ -6,7 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import { AuthContext } from '../contexts/AuthContext';
 import { ISignup, UserContextType } from '../../@types/user';
-import { isValidEmail } from '../../utils/funcs';
+import { isValidEmail, isValidName } from '../../utils/funcs';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface ISignupProps {}
@@ -106,25 +106,14 @@ const Signup: React.FC<ISignupProps> = (props) => {
         formState: { errors }
     } = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
     const [open, setOpen] = useState<boolean>(false);
-    const [firstNameError, setFirstNameError] = useState(false);
-    const [lastNameError, setLasttNameError] = useState(false);
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState<unknown>();
     const navigate = useNavigate();
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const handleEmailValidation = (email: string) => isValidEmail(email);
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
-        if (/[^-'a-zÀ-ÿ ]/gi.test(data.firstName)) {
-            setFirstNameError(true);
-            return;
-        }
-        if (/[^-'a-zÀ-ÿ ]/gi.test(data.lastName)) {
-            setLasttNameError(true);
-            return;
-        }
         const payload: ISignup = {
             email: data.email,
             password: data.password,
@@ -152,8 +141,11 @@ const Signup: React.FC<ISignupProps> = (props) => {
                     </Typography>
                     <Form onSubmit={handleSubmit(onSubmit)}>
                         <TextField
-                            {...register('firstName', { required: true })}
-                            helperText={firstNameError && 'Le prénom contient des caractères spéciaux non autorisés'}
+                            {...register('firstName', {
+                                required: { value: true, message: 'Le prénom est obligatoire' },
+                                validate: isValidName || 'Le prénom contient des caractères spéciaux non autorisés'
+                            })}
+                            helperText={errors.firstName && errors.firstName?.message}
                             FormHelperTextProps={{
                                 className: classes.helper
                             }}
@@ -164,8 +156,11 @@ const Signup: React.FC<ISignupProps> = (props) => {
                             required
                         />
                         <TextField
-                            {...register('lastName', { required: true })}
-                            helperText={lastNameError && 'Le nom contient des caractères spéciaux non autorisés'}
+                            {...register('lastName', {
+                                required: { value: true, message: 'Le nom est obligatoire' },
+                                validate: (value) => isValidName(value) || 'Le nom contient des caractères spéciaux non autorisés'
+                            })}
+                            helperText={errors.lastName && errors.lastName?.message}
                             FormHelperTextProps={{
                                 className: classes.helper
                             }}
@@ -176,9 +171,9 @@ const Signup: React.FC<ISignupProps> = (props) => {
                             required
                         />
                         <TextField
-                            {...register('email', { required: true, validate: handleEmailValidation })}
+                            {...register('email', { required: { value: true, message: "L'email est obligatoire" }, validate: isValidEmail || 'Vous devez saisir un email valide' })}
                             defaultValue=""
-                            helperText={errors.email && 'Vous devez saisir un email valide'}
+                            helperText={errors.email && errors.email?.message}
                             FormHelperTextProps={{
                                 className: classes.helper
                             }}

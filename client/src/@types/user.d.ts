@@ -19,9 +19,21 @@ export interface ISignup {
     lastName: string;
 }
 
+export type UpdateUser = {
+    firstName: string;
+    lastName: string;
+    email: string;
+};
+
+export type UpdatePassword = {
+    password: string;
+};
+
 export type UserContextType = {
     user: IUser | null;
     login: (payload: ILogin) => Promise<IUser>;
     signup: (payload: ISignup) => Promise<IUser>;
     logout: () => void;
+    updateUser: (payload: UpdateUser, userId: string) => Promise<IUser>;
+    updatePassword: (payload: UpdatePassword, userId: string) => Promise<boolean>;
 };

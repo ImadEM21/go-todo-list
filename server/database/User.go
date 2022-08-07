@@ -53,12 +53,12 @@ func GetUsers() ([]*User, error) {
 	return users, nil
 }
 
-func GetUser(userId primitive.ObjectID) (*User, error) {
+func GetUser(userId primitive.ObjectID, selectPassword int16) (*User, error) {
 	client, ctx := InitDb()
 	defer CloseDb(&client, ctx)
 	var user *User
 	coll := client.Database("todos").Collection("users")
-	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: selectPassword}})
 	errColl := coll.FindOne(ctx, bson.D{{Key: "_id", Value: userId}}, opts).Decode(&user)
 	if errColl != nil {
 		if errColl == mongo.ErrNoDocuments {
