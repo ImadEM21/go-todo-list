@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { CreateTodo } from '../../@types/todo';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
+import { DialogTitle, DialogContent, DialogActions, Button, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import Editor from './Editor';
+import Editor from '../ui/Editor';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import fr from 'date-fns/esm/locale/fr/index.js';
@@ -10,8 +10,9 @@ import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
-import { Transition, Inputs } from './DialogDetails';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { TodoInputs } from '../../@types/todo';
+import StyledDialog from '../ui/StyledDialog';
 
 export interface ICreateFormProps {
     open: boolean;
@@ -39,19 +40,17 @@ const CreateForm = ({ open, setOpen, setSuccess }: ICreateFormProps) => {
     const location = useLocation();
     const { createTodo } = useContext(TodoContext) as TodoContextType;
     const { user } = useContext(AuthContext) as UserContextType;
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const {
         register,
         handleSubmit,
         formState: { errors }
-    } = useForm<Inputs>({ mode: 'onBlur', defaultValues: { title: '', completed: false } });
+    } = useForm<TodoInputs>({ mode: 'onBlur', defaultValues: { title: '', completed: false } });
     const [description, setDescription] = useState<string>('');
     const [endDate, setEndDate] = useState<Date | null>(new Date());
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
 
-    const onSubmit = async (data: Inputs) => {
+    const onSubmit = async (data: TodoInputs) => {
         if (!user) {
             navigate('/', { state: { from: location }, replace: true });
             return;
@@ -81,7 +80,7 @@ const CreateForm = ({ open, setOpen, setSuccess }: ICreateFormProps) => {
     };
 
     return (
-        <Dialog fullScreen={fullScreen} maxWidth="md" open={open} onClose={() => setOpen(false)} aria-labelledby="details-todo" scroll="paper" TransitionComponent={Transition}>
+        <StyledDialog open={open} setOpen={setOpen} labelledby="details-todo">
             <DialogTitle id="details-new-todo">Nouvelle tâche</DialogTitle>
             <DialogContent>
                 {loading ? (
@@ -131,7 +130,7 @@ const CreateForm = ({ open, setOpen, setSuccess }: ICreateFormProps) => {
                     </Button>
                 </DialogActions>
             )}
-        </Dialog>
+        </StyledDialog>
     );
 };
 

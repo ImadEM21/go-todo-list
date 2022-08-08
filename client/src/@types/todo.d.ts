@@ -34,6 +34,11 @@ export type Complete = {
     completed: boolean;
 };
 
+export type TodoInputs = {
+    title: string;
+    completed: boolean;
+};
+
 export type CreateTodo = {
     title: string;
     description: string;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Snackbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CreateForm from './CreateForm';
-import { Alert } from './TodoCell';
+import Alert from '../ui/Alert';
 
 export interface ICreateTodoProps {}
 

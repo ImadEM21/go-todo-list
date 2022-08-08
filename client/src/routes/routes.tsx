@@ -6,6 +6,7 @@ const Dashboard = lazy(() => import('../components/dashboard/Dashboard'));
 const Todos = lazy(() => import('../components/todos/Todos'));
 const NewPassword = lazy(() => import('../components/auth/NewPassword'));
 const Settings = lazy(() => import('../components/settings/Settings'));
+const Stats = lazy(() => import('../components/stats/Stats'));
 
 type Route = {
     id: string;
@@ -18,6 +19,11 @@ export const routes: Route[] = [
         id: uuidv4(),
         path: '/',
         component: <Home />
+    },
+    {
+        id: uuidv4(),
+        path: '/reinitialiser-mot-de-passe/:userId/:token',
+        component: <NewPassword />
     },
     {
         id: uuidv4(),
@@ -39,8 +45,12 @@ export const routes: Route[] = [
     },
     {
         id: uuidv4(),
-        path: '/reinitialiser-mot-de-passe/:userId/:token',
-        component: <NewPassword />
+        path: '/stats',
+        component: (
+            <PrivateRoute>
+                <Stats />
+            </PrivateRoute>
+        )
     },
     {
         id: uuidv4(),

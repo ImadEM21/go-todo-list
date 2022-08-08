@@ -3,6 +3,7 @@ import { Typography, Grid, useTheme, Divider } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Account from './Account';
 import Password from './Password';
+import DeleteAccount from './DeleteAccount';
 
 export interface ISettingsProps {}
 
@@ -20,6 +21,11 @@ const Settings = (props: ISettingsProps) => {
                     Changer mon mot de passe
                 </Typography>
                 <Password />
+                <Divider />
+                <Typography component="h1" variant="h3" sx={{ color: theme.palette.text.primary }} mt="2rem">
+                    Supprimer mon compte
+                </Typography>
+                <DeleteAccount />
             </Grid>
         </DashWrapper>
     );

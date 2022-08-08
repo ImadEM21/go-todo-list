@@ -1,35 +1,23 @@
-import React, { useState, forwardRef, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { ITodo } from '../../@types/todo';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, Slide, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import Editor from './Editor';
+import Editor from '../ui/Editor';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import fr from 'date-fns/esm/locale/fr/index.js';
 import useEffectDebugger from '../../hooks/useEffectDebugger';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
-
-export const Transition = forwardRef(function Transition(
-    props: TransitionProps & {
-        children: React.ReactElement<any, any>;
-    },
-    ref: React.Ref<unknown>
-) {
-    return <Slide direction="up" ref={ref} {...props} />;
-});
+import Transition from '../ui/Transition';
+import { TodoInputs } from '../../@types/todo';
+import StyledDialog from '../ui/StyledDialog';
 
 interface IDialogDetailsProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     todo: ITodo;
 }
-
-export type Inputs = {
-    title: string;
-    completed: boolean;
-};
 
 type Deps = {
     endDate: {
@@ -60,7 +48,7 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
         register,
         handleSubmit,
         formState: { isDirty }
-    } = useForm<Inputs>({ mode: 'onBlur', defaultValues: { title: todo.title, completed: todo.completed } });
+    } = useForm<TodoInputs>({ mode: 'onBlur', defaultValues: { title: todo.title, completed: todo.completed } });
     const [description, setDescription] = useState<string>(todo.description);
     const [endDate, setEndDate] = useState<Date | null>(new Date(todo.endDate));
     const [disabled, setDisabled] = useState(true);
@@ -68,7 +56,7 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
 
-    const onSubmit = async (data: Inputs) => {
+    const onSubmit = async (data: TodoInputs) => {
         setLoading(true);
         const payload: ITodo = {
             ...todo,
@@ -112,7 +100,7 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
     );
 
     return (
-        <Dialog fullScreen={fullScreen} maxWidth="md" open={open} onClose={() => setOpen(false)} aria-labelledby="details-todo" scroll="paper" TransitionComponent={Transition}>
+        <StyledDialog open={open} setOpen={setOpen} labelledby="details-todo">
             <DialogTitle id={`details-todo-${todo._id}`}>{todo.title}</DialogTitle>
             <DialogContent>
                 {loading ? (
@@ -156,7 +144,7 @@ const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
                     </Button>
                 </DialogActions>
             )}
-        </Dialog>
+        </StyledDialog>
     );
 };
 

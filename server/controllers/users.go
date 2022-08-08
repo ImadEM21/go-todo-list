@@ -236,6 +236,14 @@ func DeleteUser(res http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(res).Encode("No id provided " + err.Error())
 		return
 	}
+
+	todosDeleted, errTodos := database.DeleteUserTodos(userId)
+	if errTodos != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode(errTodos.Error())
+		return
+	}
+
 	nDeleted, errMongo := database.DeleteUser(userId)
 	if errMongo != nil {
 		res.WriteHeader(http.StatusBadRequest)
@@ -245,6 +253,7 @@ func DeleteUser(res http.ResponseWriter, req *http.Request) {
 
 	json := simplejson.New()
 	json.Set("nDeleted", nDeleted)
+	json.Set("todosDeleted", todosDeleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {

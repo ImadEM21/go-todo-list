@@ -1,4 +1,4 @@
-import { IRoute } from './Sidebar';
+import { IRoute } from './routes';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMediaQuery } from '@mui/material';
 import SidebarButton from './SidebarButton';

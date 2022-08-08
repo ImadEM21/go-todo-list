@@ -59,7 +59,7 @@ const RootHome = ({ children }: IRootHomeProps) => {
                             width: 400
                         }}
                         alt="Une illustration des tâches completées"
-                        src="/images/todo_illiustration.svg"
+                        src="/images/todo_illustration.svg"
                     />
                 </Grid>
                 <Grid item={true} container={true} direction="column" justifyContent="center" alignItems="center" className={classes.right}>

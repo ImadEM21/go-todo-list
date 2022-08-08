@@ -1,23 +1,43 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	database "todo-list-api/database"
 	routes "todo-list-api/routes"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
 	envErr := godotenv.Load()
 	if envErr != nil {
 		log.Println("No .env file found")
+	}
+
+	client, ctx := database.InitDb()
+	defer database.CloseDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	_, err := coll.Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.D{{Key: "email", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+	if err != nil {
+		log.Fatalln(err.Error())
 	}
 
 	router := mux.NewRouter().StrictSlash(false)
@@ -36,15 +56,13 @@ func main() {
 	routes.HandleUsersRequest(router)
 	routes.HandleTokensRequest(router)
 
-	/*corsOpts := cors.Options{
-		AllowedHeaders: []string{"X-Requested-With", "Content-Type"},
+	opts := cors.Options{
 		AllowedOrigins: []string{os.Getenv("ORIGIN_ALLOWED")},
+		AllowedHeaders: []string{"X-Requested-With", "Content-Type", "Authorization"},
 		AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
+		Debug:          false,
 	}
-
-	handler := cors.New(corsOpts).Handler(n)*/
-
-	handler := cors.AllowAll().Handler(n)
+	handler := cors.New(opts).Handler(n)
 
 	srv := &http.Server{
 		Handler:      handler,

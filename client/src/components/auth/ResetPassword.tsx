@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Dialog, useMediaQuery, useTheme, styled, DialogTitle, DialogActions, CircularProgress, DialogContent, DialogContentText, TextField, Button } from '@mui/material';
-import { Transition } from '../todos/DialogDetails';
+import { styled, DialogTitle, DialogActions, CircularProgress, DialogContent, DialogContentText, TextField, Button } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { Alert } from '../todos/TodoCell';
 import tokensApi from '../../api/token';
 import { isValidEmail } from '../../utils/funcs';
 import axios from 'axios';
+import Alert from '../ui/Alert';
+import StyledDialog from '../ui/StyledDialog';
 
 export interface IResetPasswordProps {
     open: boolean;
@@ -32,8 +32,6 @@ const Form = styled('form')(({ theme }) => ({
 }));
 
 const ResetPassword = ({ open, setOpen }: IResetPasswordProps) => {
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -69,7 +67,7 @@ const ResetPassword = ({ open, setOpen }: IResetPasswordProps) => {
     };
 
     return (
-        <Dialog fullScreen={fullScreen} maxWidth="md" open={open} onClose={() => setOpen(false)} aria-labelledby="reset-password" scroll="paper" TransitionComponent={Transition}>
+        <StyledDialog open={open} setOpen={setOpen} labelledby="reset-password">
             <DialogTitle id="reset-password-title">Réinitialisez votre mot de passe</DialogTitle>
             <DialogContent>
                 {loading ? (
@@ -116,7 +114,7 @@ const ResetPassword = ({ open, setOpen }: IResetPasswordProps) => {
                     </Button>
                 </DialogActions>
             )}
-        </Dialog>
+        </StyledDialog>
     );
 };
 

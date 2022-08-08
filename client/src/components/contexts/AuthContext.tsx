@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { IUser, UserContextType, ILogin, ISignup, UpdateUser, UpdatePassword } from '../../@types/user';
+import { IUser, UserContextType, ILogin, ISignup, UpdateUser, UpdatePassword, UserDeleted } from '../../@types/user';
 import usersApi from '../../api/users';
 import axios from 'axios';
 
@@ -109,7 +109,28 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         });
     };
 
-    return <AuthContext.Provider value={{ user, login, signup, logout, updateUser, updatePassword }}>{children}</AuthContext.Provider>;
+    const deleteUser = (userId: string) => {
+        return new Promise<UserDeleted>(async (resolve, reject) => {
+            try {
+                const res = await usersApi.deleteUser(userId);
+                if (res.data.nDeleted < 1) {
+                    throw new Error("L'utilisateur n'a pas pu être supprimé");
+                }
+                resolve(res.data);
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    console.log('error response', error.response);
+                    reject(error.response?.data);
+                } else {
+                    console.log('unexpected error: ', error);
+                    reject(error);
+                }
+            }
+        });
+    };
+
+    return <AuthContext.Provider value={{ user, login, signup, logout, updateUser, updatePassword, deleteUser }}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;

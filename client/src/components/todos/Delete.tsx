@@ -1,15 +1,11 @@
-import { useContext, useState, forwardRef } from 'react';
+import { useContext, useState } from 'react';
 import { ITodo } from '../../@types/todo';
-import { IconButton, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, CircularProgress, Snackbar } from '@mui/material';
+import { IconButton, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, CircularProgress, Snackbar } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Transition } from './DialogDetails';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
-
-const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+import Alert from '../ui/Alert';
+import StyledDialog from '../ui/StyledDialog';
 
 export interface IDeleteProps {
     todo: ITodo;
@@ -18,8 +14,6 @@ export interface IDeleteProps {
 const Delete = ({ todo }: IDeleteProps) => {
     const { deleteTodo } = useContext(TodoContext) as TodoContextType;
     const [open, setOpen] = useState(false);
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -70,7 +64,7 @@ const Delete = ({ todo }: IDeleteProps) => {
                 <DeleteIcon color="error" />
             </IconButton>
 
-            <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="delete-todo" scroll="paper" TransitionComponent={Transition}>
+            <StyledDialog open={open} setOpen={setOpen} labelledby="delete-todo">
                 <DialogTitle id={`delete-todo-${todo._id}`}>Êtes vous sûr de vouloir supprimer la todo {todo.title}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>La todo sera définitivement supprimé et ne pourra pas être récuprée. Elle ne sera pas tenu en compte dans les statistiques non plus.</DialogContentText>
@@ -89,7 +83,7 @@ const Delete = ({ todo }: IDeleteProps) => {
                         </>
                     )}
                 </DialogActions>
-            </Dialog>
+            </StyledDialog>
             <Snackbar open={success} autoHideDuration={6000} onClose={handleCloseSuccess}>
                 <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
                     Le todo a été mise à jour avec succès

@@ -1,16 +1,15 @@
 import { useState, useContext } from 'react';
-import { styled, Grid, FormControl, InputLabel, FilledInput, InputAdornment, IconButton, FormHelperText, Snackbar } from '@mui/material';
-import { Alert } from '../todos/TodoCell';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { styled, Grid, Snackbar } from '@mui/material';
+import { SubmitHandler, useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
 import { useNavigate, useLocation } from 'react-router-dom';
+import PasswordInput from '../ui/PasswordInput';
+import Alert from '../ui/Alert';
 
 export interface IPasswordProps {}
 
@@ -42,8 +41,6 @@ const Password = (props: IPasswordProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [confirmShowPassword, setConfirmShowPassword] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const formSchema = Yup.object().shape({
@@ -52,11 +49,7 @@ const Password = (props: IPasswordProps) => {
             .required('Le mot de passe est obligatoire')
             .oneOf([Yup.ref('password')], 'Les mots de passe ne sont pas identiques')
     });
-    const {
-        register,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
+    const methods = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         setLoading(true);
@@ -79,22 +72,6 @@ const Password = (props: IPasswordProps) => {
         }
     };
 
-    const handleClickShowPassword = () => {
-        setShowPassword((prev) => !prev);
-    };
-
-    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-    };
-
-    const handleClickConfirmShowPassword = () => {
-        setConfirmShowPassword((prev) => !prev);
-    };
-
-    const handleMouseDownConfirmPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-    };
-
     const handleCloseError = (event?: React.SyntheticEvent | Event, reason?: string) => {
         if (reason === 'clickaway') {
             return;
@@ -113,63 +90,41 @@ const Password = (props: IPasswordProps) => {
 
     return (
         <>
-            <Form onSubmit={handleSubmit(onSubmit)}>
-                <Grid item xs={12} display="flex">
-                    <Grid item xs={12} md={6} paddingRight=".5rem">
-                        <FormControl fullWidth variant="filled" color="info">
-                            <InputLabel htmlFor="password">Nouveau mot de passe</InputLabel>
-                            <FilledInput
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                {...register('password', { required: true, minLength: 6 })}
+            <FormProvider {...methods}>
+                <Form onSubmit={methods.handleSubmit(onSubmit)}>
+                    <Grid item xs={12} display="flex">
+                        <Grid item xs={12} md={6} paddingRight=".5rem">
+                            <PasswordInput
+                                name="password"
+                                color="info"
                                 defaultValue=""
-                                aria-describedby="password-helper-text"
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton aria-label="afficher le mot de passe" onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword} edge="end">
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
+                                error={methods.formState.errors.password !== undefined}
+                                errorMessage={methods.formState.errors.password?.message}
+                                fullWidth
+                                id="new-password"
+                                label="Nouveau mot de passe"
                             />
-                            {errors.password && (
-                                <FormHelperText className={classes.helper} id="password-helper-text">
-                                    {errors.password?.message}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={6} paddingLeft=".5rem">
-                        <FormControl fullWidth variant="filled" color="info">
-                            <InputLabel htmlFor="confirmPassword">Confirmez le nouveau mot de passe</InputLabel>
-                            <FilledInput
-                                id="confirmPassword"
-                                type={confirmShowPassword ? 'text' : 'password'}
-                                {...register('confirmPassword', { required: true, minLength: 6 })}
+                        </Grid>
+                        <Grid item xs={12} md={6} paddingLeft=".5rem">
+                            <PasswordInput
+                                name="confirmPassword"
+                                color="info"
                                 defaultValue=""
-                                aria-describedby="confirm-password-helper-text"
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton aria-label="afficher le mot de passe" onClick={handleClickConfirmShowPassword} onMouseDown={handleMouseDownConfirmPassword} edge="end">
-                                            {confirmShowPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
+                                error={methods.formState.errors.confirmPassword !== undefined}
+                                errorMessage={methods.formState.errors.confirmPassword?.message}
+                                fullWidth
+                                id="confirm-new-password"
+                                label="Confirmez le nouveau mot de passe"
                             />
-                            {errors.confirmPassword && (
-                                <FormHelperText className={classes.helper} id="confirm-password-helper-text">
-                                    {errors.confirmPassword?.message}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
+                        </Grid>
                     </Grid>
-                </Grid>
-                <Grid item xs={12} display="flex" justifyContent="end">
-                    <LoadingButton loading={loading} type="submit" loadingPosition="start" startIcon={<SaveIcon />} variant="contained" color="info">
-                        Enregistrer le nouveau mot de passe
-                    </LoadingButton>
-                </Grid>
-            </Form>
+                    <Grid item xs={12} display="flex" justifyContent="end">
+                        <LoadingButton loading={loading} type="submit" loadingPosition="start" startIcon={<SaveIcon />} variant="contained" color="info">
+                            Enregistrer le nouveau mot de passe
+                        </LoadingButton>
+                    </Grid>
+                </Form>
+            </FormProvider>
             <Snackbar open={success} autoHideDuration={6000} onClose={handleCloseSuccess}>
                 <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
                     Votre mot de passe a bien été mis à jour.

@@ -1,6 +1,5 @@
-import { useState, useContext, forwardRef } from 'react';
+import { useState, useContext } from 'react';
 import { TableCell, CircularProgress, Checkbox, Snackbar, Chip } from '@mui/material';
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ITodo } from '../../@types/todo';
 import Details from './Details';
 import Delete from './Delete';
@@ -8,10 +7,7 @@ import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
 import { getStatusTodo, Status } from '../../utils/funcs';
 import { useTheme } from '@mui/material';
-
-export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+import Alert from '../ui/Alert';
 
 export interface ITodoCellProps {
     todo: ITodo;

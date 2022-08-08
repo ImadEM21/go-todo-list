@@ -29,6 +29,21 @@ export type UpdatePassword = {
     password: string;
 };
 
+export type UserDeleted = {
+    nDeleted: number;
+    todosDeleted: number;
+};
+
+export type UserLogin = {
+    token: string;
+    user: IUser;
+};
+
+export type UserUpdated = {
+    user: IUser;
+    nModified: number;
+};
+
 export type UserContextType = {
     user: IUser | null;
     login: (payload: ILogin) => Promise<IUser>;
@@ -36,4 +51,5 @@ export type UserContextType = {
     logout: () => void;
     updateUser: (payload: UpdateUser, userId: string) => Promise<IUser>;
     updatePassword: (payload: UpdatePassword, userId: string) => Promise<boolean>;
+    deleteUser: (userId: string) => Promise<UserDeleted>;
 };

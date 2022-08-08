@@ -170,3 +170,14 @@ func CompleteTodo(todoId primitive.ObjectID, complete bool) (int64, error) {
 	}
 	return result.ModifiedCount, nil
 }
+
+func DeleteUserTodos(userId primitive.ObjectID) (int64, error) {
+	client, ctx := InitDb()
+	defer CloseDb(&client, ctx)
+	coll := client.Database("todos").Collection("todos")
+	result, err := coll.DeleteMany(ctx, bson.D{{Key: "userId", Value: userId}})
+	if err != nil {
+		return 0, err
+	}
+	return result.DeletedCount, nil
+}

@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { styled, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow } from '@mui/material';
-import TablePaginationActions from './TablePaginationActions';
+import TablePaginationActions from '../ui/TablePaginationActions';
 import { ITodo } from '../../@types/todo';
 import TodoCell from './TodoCell';
 import { useTheme } from '@mui/material';

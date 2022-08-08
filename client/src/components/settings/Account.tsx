@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { isValidEmail, isValidName } from '../../utils/funcs';
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
-import { Alert } from '../todos/TodoCell';
+import Alert from '../ui/Alert';
 
 export interface IAccountProps {}
 

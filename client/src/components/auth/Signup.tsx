@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Button, Modal, Box, Typography, styled, TextField, Alert } from '@mui/material';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm, FormProvider } from 'react-hook-form';
 import { LocationState } from './Login';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -8,6 +8,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { ISignup, UserContextType } from '../../@types/user';
 import { isValidEmail, isValidName } from '../../utils/funcs';
 import { useNavigate, useLocation } from 'react-router-dom';
+import PasswordInput from '../ui/PasswordInput';
 
 export interface ISignupProps {}
 
@@ -100,11 +101,7 @@ const Signup: React.FC<ISignupProps> = (props) => {
             .required('Le mot de passe est obligatoire')
             .oneOf([Yup.ref('password')], 'Les mots de passe ne sont pas identiques')
     });
-    const {
-        register,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
+    const methods = useForm<Inputs>({ mode: 'onBlur', resolver: yupResolver(formSchema) });
     const [open, setOpen] = useState<boolean>(false);
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState<unknown>();
@@ -139,98 +136,96 @@ const Signup: React.FC<ISignupProps> = (props) => {
                     <Typography variant="h4" component="h2" align="center" className={classes.title}>
                         Se créer un compte
                     </Typography>
-                    <Form onSubmit={handleSubmit(onSubmit)}>
-                        <TextField
-                            {...register('firstName', {
-                                required: { value: true, message: 'Le prénom est obligatoire' },
-                                validate: isValidName || 'Le prénom contient des caractères spéciaux non autorisés'
-                            })}
-                            helperText={errors.firstName && errors.firstName?.message}
-                            FormHelperTextProps={{
-                                className: classes.helper
-                            }}
-                            label="Prénom"
-                            type="text"
-                            color="info"
-                            variant="filled"
-                            required
-                        />
-                        <TextField
-                            {...register('lastName', {
-                                required: { value: true, message: 'Le nom est obligatoire' },
-                                validate: (value) => isValidName(value) || 'Le nom contient des caractères spéciaux non autorisés'
-                            })}
-                            helperText={errors.lastName && errors.lastName?.message}
-                            FormHelperTextProps={{
-                                className: classes.helper
-                            }}
-                            label="Nom"
-                            type="text"
-                            color="info"
-                            variant="filled"
-                            required
-                        />
-                        <TextField
-                            {...register('email', { required: { value: true, message: "L'email est obligatoire" }, validate: isValidEmail || 'Vous devez saisir un email valide' })}
-                            defaultValue=""
-                            helperText={errors.email && errors.email?.message}
-                            FormHelperTextProps={{
-                                className: classes.helper
-                            }}
-                            color="info"
-                            type="email"
-                            label="Email"
-                            variant="filled"
-                            required
-                        />
-                        <TextField
-                            {...register('password', { required: true, minLength: 6 })}
-                            label="Mot de passe"
-                            type="password"
-                            color="info"
-                            helperText={errors.password && errors.password?.message}
-                            FormHelperTextProps={{
-                                className: classes.helper
-                            }}
-                            variant="filled"
-                            required
-                        />
-                        <TextField
-                            {...register('confirmPwd', { required: true, minLength: 6 })}
-                            label="Confirmez le mot de passe"
-                            type="password"
-                            color="info"
-                            helperText={errors.confirmPwd && errors.confirmPwd?.message}
-                            FormHelperTextProps={{
-                                className: classes.helper
-                            }}
-                            variant="filled"
-                            required
-                        />
-                        {error && (
-                            <Alert
-                                onClose={() => {
-                                    setError(false);
-                                    setErrorMessage('');
+                    <FormProvider {...methods}>
+                        <Form onSubmit={methods.handleSubmit(onSubmit)}>
+                            <TextField
+                                {...methods.register('firstName', {
+                                    required: { value: true, message: 'Le prénom est obligatoire' },
+                                    validate: isValidName || 'Le prénom contient des caractères spéciaux non autorisés'
+                                })}
+                                helperText={methods.formState.errors.firstName && methods.formState.errors.firstName?.message}
+                                FormHelperTextProps={{
+                                    className: classes.helper
                                 }}
-                                severity="error"
-                            >
-                                <>
-                                    Une erreur est survenue, veuillez réessayer.
-                                    <br />
-                                    Message: {errorMessage}
-                                </>
-                            </Alert>
-                        )}
-                        <div className={classes.btnContainer}>
-                            <Button variant="contained" color="info" type="reset">
-                                RÉINITIALISER
-                            </Button>
-                            <Button variant="contained" color="info" type="submit">
-                                VALIDER
-                            </Button>
-                        </div>
-                    </Form>
+                                label="Prénom"
+                                type="text"
+                                color="info"
+                                variant="filled"
+                                required
+                            />
+                            <TextField
+                                {...methods.register('lastName', {
+                                    required: { value: true, message: 'Le nom est obligatoire' },
+                                    validate: (value) => isValidName(value) || 'Le nom contient des caractères spéciaux non autorisés'
+                                })}
+                                helperText={methods.formState.errors.lastName && methods.formState.errors.lastName?.message}
+                                FormHelperTextProps={{
+                                    className: classes.helper
+                                }}
+                                label="Nom"
+                                type="text"
+                                color="info"
+                                variant="filled"
+                                required
+                            />
+                            <TextField
+                                {...methods.register('email', { required: { value: true, message: "L'email est obligatoire" }, validate: isValidEmail || 'Vous devez saisir un email valide' })}
+                                defaultValue=""
+                                helperText={methods.formState.errors.email && methods.formState.errors.email?.message}
+                                FormHelperTextProps={{
+                                    className: classes.helper
+                                }}
+                                color="info"
+                                type="email"
+                                label="Email"
+                                variant="filled"
+                                required
+                            />
+                            <PasswordInput
+                                name="password"
+                                color="info"
+                                defaultValue=""
+                                error={methods.formState.errors.password !== undefined}
+                                errorMessage={methods.formState.errors.password?.message}
+                                fullWidth
+                                id="signup-password"
+                                label="Mot de passe"
+                            />
+                            <PasswordInput
+                                name="confirmPwd"
+                                color="info"
+                                defaultValue=""
+                                error={methods.formState.errors.confirmPwd !== undefined}
+                                errorMessage={methods.formState.errors.confirmPwd?.message}
+                                fullWidth
+                                id="confirm-signup-password"
+                                label="Confirmez le mot de passe"
+                            />
+                            {error && (
+                                <Alert
+                                    onClose={() => {
+                                        setError(false);
+                                        setErrorMessage('');
+                                    }}
+                                    severity="error"
+                                >
+                                    <>
+                                        Une erreur est survenue, veuillez réessayer.
+                                        <br />
+                                        Message: {errorMessage}
+                                    </>
+                                </Alert>
+                            )}
+                            <div className={classes.btnContainer}>
+                                <Button variant="contained" color="info" type="reset">
+                                    RÉINITIALISER
+                                </Button>
+                                <Button variant="contained" color="info" type="submit">
+                                    VALIDER
+                                </Button>
+                            </div>
+                        </Form>
+                    </FormProvider>
                 </Box>
             </StyledModal>
         </>

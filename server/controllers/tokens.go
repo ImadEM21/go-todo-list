@@ -115,8 +115,8 @@ func CreateToken(res http.ResponseWriter, req *http.Request) {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "imad.elmahrad98@gmail.com",
-				Name:  "Todos",
+				Email: "no-reply@imadelmahrad.com",
+				Name:  "TODO",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
