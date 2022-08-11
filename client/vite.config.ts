@@ -14,6 +14,7 @@ export default defineConfig({
 			output: {
 			  manualChunks: {
 				editor: ['jodit'],
+				recharts: ['recharts'],
 			  },
 			},
 		  },
