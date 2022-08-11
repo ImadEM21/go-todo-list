@@ -11,6 +11,7 @@ export default defineConfig({
 		},
 		minify: true,
 		rollupOptions: {
+			maxParallelFileOps: 1,
 			output: {
 			  manualChunks: {
 				editor: ['jodit'],
