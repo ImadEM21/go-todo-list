@@ -5,7 +5,7 @@ const token = localStorage.getItem('chillingbook-user-token');
 
 axios.defaults.headers.common = { Authorization: `Bearer ${token}` };
 
-const path = import.meta.env.PROD ? '/api/users' : 'http://localhost:3000/api/todos';
+const path = import.meta.env.PROD ? '/api/todos' : 'http://localhost:3000/api/todos';
 
 const api = axios.create({
     baseURL: path
