@@ -1,5 +1,4 @@
 import { styled, Grid, useTheme, Avatar, useMediaQuery } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import RenderRoute from './RenderRoute';
 import { MAIN_ROUTES, SECONDARY_ROUTES } from './routes';
 
@@ -13,15 +12,16 @@ const SideBarBody = styled(Grid)(({ theme }) => ({
 export interface ISidebarProps {}
 
 const Sidebar = (props: ISidebarProps) => {
-    const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery('(max-width: 900px)');
 
     return (
-        <SideBarBody container={true} direction="column" justifyContent="space-between" alignItems="center">
+        <SideBarBody container direction="column" justifyContent="space-between" alignItems="center">
             <Grid
                 sx={{
-                    [theme.breakpoints.down(500)]: {
+                    paddingLeft: '1rem',
+                    maxWidth: '100%',
+                    [theme.breakpoints.down(700)]: {
                         paddingLeft: '0',
                         paddingRight: '0',
                         width: '100%'
@@ -30,10 +30,9 @@ const Sidebar = (props: ISidebarProps) => {
             >
                 <Grid
                     sx={{
-                        paddingLeft: '1rem',
                         paddingRight: '1rem',
                         marginTop: '2rem',
-                        [theme.breakpoints.down(500)]: {
+                        [theme.breakpoints.down(700)]: {
                             paddingLeft: '0',
                             paddingRight: '0',
                             width: '100% border-box',
@@ -60,12 +59,11 @@ const Sidebar = (props: ISidebarProps) => {
                     />
                 </Grid>
                 <Grid
-                    container={true}
+                    container
                     className="menu"
                     sx={{
                         width: '100%',
-                        paddingLeft: '1rem',
-                        [theme.breakpoints.down(500)]: {
+                        [theme.breakpoints.down(700)]: {
                             paddingLeft: '0',
                             paddingRight: '0',
                             marginLeft: '0',
@@ -83,16 +81,17 @@ const Sidebar = (props: ISidebarProps) => {
             <Grid
                 className="menu"
                 sx={{
+                    maxWidth: '100%',
                     width: '100%',
                     paddingLeft: '1rem',
                     marginBottom: '1rem',
-                    [theme.breakpoints.down(500)]: {
+                    [theme.breakpoints.down(700)]: {
                         width: '100%',
                         paddingLeft: '0',
                         overflow: 'hidden'
                     }
                 }}
-                container={true}
+                container
                 direction="column"
                 justifyContent="flex-start"
                 alignItems="flex-start"

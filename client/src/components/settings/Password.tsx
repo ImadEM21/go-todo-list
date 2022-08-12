@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { styled, Grid, Snackbar } from '@mui/material';
+import { styled, Grid, Snackbar, useMediaQuery } from '@mui/material';
 import { SubmitHandler, useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -40,6 +40,7 @@ const Password = (props: IPasswordProps) => {
     const { user, updatePassword } = useContext(AuthContext) as UserContextType;
     const navigate = useNavigate();
     const location = useLocation();
+    const isMobile = useMediaQuery('(max-width: 900px)');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
@@ -92,8 +93,16 @@ const Password = (props: IPasswordProps) => {
         <>
             <FormProvider {...methods}>
                 <Form onSubmit={methods.handleSubmit(onSubmit)}>
-                    <Grid item xs={12} display="flex">
-                        <Grid item xs={12} md={6} paddingRight=".5rem">
+                    <Grid container>
+                        <Grid
+                            item
+                            xs={12}
+                            md={6}
+                            sx={{
+                                paddingRight: isMobile ? '' : '.5rem',
+                                marginBottom: isMobile ? '2rem' : ''
+                            }}
+                        >
                             <PasswordInput
                                 name="password"
                                 color="info"
@@ -105,7 +114,7 @@ const Password = (props: IPasswordProps) => {
                                 label="Nouveau mot de passe"
                             />
                         </Grid>
-                        <Grid item xs={12} md={6} paddingLeft=".5rem">
+                        <Grid item xs={12} md={6} paddingLeft={isMobile ? '' : '.5rem'}>
                             <PasswordInput
                                 name="confirmPassword"
                                 color="info"

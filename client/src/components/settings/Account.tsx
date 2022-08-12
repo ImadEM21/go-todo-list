@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
-import { styled, Grid, TextField, Snackbar } from '@mui/material';
+import { styled, Grid, TextField, Snackbar, useMediaQuery } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { isValidEmail, isValidName } from '../../utils/funcs';
@@ -39,6 +39,7 @@ const Account = (props: IAccountProps) => {
     const { user, updateUser } = useContext(AuthContext) as UserContextType;
     const navigate = useNavigate();
     const location = useLocation();
+    const isMobile = useMediaQuery('(max-width: 900px)');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -87,8 +88,16 @@ const Account = (props: IAccountProps) => {
     return (
         <>
             <Form onSubmit={handleSubmit(onSubmit)}>
-                <Grid item xs={12} display="flex">
-                    <Grid item xs={12} md={6} paddingRight=".5rem">
+                <Grid container>
+                    <Grid
+                        item
+                        xs={12}
+                        md={6}
+                        sx={{
+                            paddingRight: isMobile ? '' : '.5rem',
+                            marginBottom: isMobile ? '2rem' : ''
+                        }}
+                    >
                         <TextField
                             {...register('firstName', {
                                 required: { value: true, message: 'Le prénom est obligatoire' },
@@ -107,7 +116,7 @@ const Account = (props: IAccountProps) => {
                             defaultValue={user?.firstName}
                         />
                     </Grid>
-                    <Grid item xs={12} md={6} paddingLeft=".5rem">
+                    <Grid item xs={12} md={6} paddingLeft={isMobile ? '' : '.5rem'}>
                         <TextField
                             {...register('lastName', {
                                 required: { value: true, message: 'Le nom est obligatoire' },
