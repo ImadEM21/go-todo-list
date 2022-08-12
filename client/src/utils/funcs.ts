@@ -26,16 +26,16 @@ export const isValidName = (name: string) => {
 export const getStatusTodo = (todo: ITodo): Status => {
     let today = new Date();
     let todoDate = new Date(todo.endDate);
-    if (todoDate.getTime() <= today.getTime() && !todo.completed) {
-        return {
-            label: 'En retard',
-            color: 'error'
-        };
-    }
     if (datesAreOnSameDay(today, todoDate) && !todo.completed) {
         return {
             label: "À finir aujourd'hui",
             color: 'warning'
+        };
+    }
+    if (todoDate.getTime() <= today.getTime() && !todo.completed) {
+        return {
+            label: 'En retard',
+            color: 'error'
         };
     }
     if (!todo.completed) {
