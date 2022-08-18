@@ -60,7 +60,7 @@ const TodoProvider: React.FC<Props> = ({ children }) => {
                 const res = await todosApi.getTodos(userId, limit, page + 1);
                 const lastCompletedParsed: GraphData[] = res.data.lastCompleted.map((elt: GraphData) => ({ date: new Date(elt.date).toLocaleDateString(), total: elt.total }));
                 localStorage.setItem('todos-obj', JSON.stringify(res.data.todos));
-                localStorage.setItem('todos-total', res.data.total);
+                localStorage.setItem('todos-total', JSON.stringify(res.data.total));
                 localStorage.setItem('todos-lastCompleted', JSON.stringify(lastCompletedParsed));
                 setTodos(res.data.todos ?? []);
                 setTotal(res.data.total ?? 0);

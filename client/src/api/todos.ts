@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ITodo, Complete, CreateTodo } from '../@types/todo';
+import { ITodo, Complete, CreateTodo, GetTodos, TodoCreated, TodoModified, TodoDeleted } from '../@types/todo';
 
 const token = localStorage.getItem('chillingbook-user-token');
 
@@ -12,27 +12,27 @@ const api = axios.create({
 });
 
 export const getTodos = (userId: string, limit: number, page: number) => {
-    return api.get('/', { params: { userId, limit, page } });
+    return api.get<GetTodos>('/', { params: { userId, limit, page } });
 };
 
 export const getTodo = (todoId: string) => {
-    return api.get(`/${todoId}`);
+    return api.get<ITodo>(`/${todoId}`);
 };
 
 export const createTodo = (todo: CreateTodo) => {
-    return api.post('/', todo);
+    return api.post<TodoCreated>('/', todo);
 };
 
 export const updateTodo = (todoId: string, todo: ITodo) => {
-    return api.put(`/${todoId}`, todo);
+    return api.put<TodoModified>(`/${todoId}`, todo);
 };
 
 export const completeTodo = (todoId: string, payload: Complete) => {
-    return api.put(`/${todoId}/complete`, payload);
+    return api.put<TodoModified>(`/${todoId}/complete`, payload);
 };
 
 export const deleteTodo = (todoId: string) => {
-    return api.delete(`/${todoId}`);
+    return api.delete<TodoDeleted>(`/${todoId}`);
 };
 
 const todosApi = {
