@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useCallback } from 'react';
 import { IUser, UserContextType, ILogin, ISignup, UpdateUser, UpdatePassword, UserDeleted } from '../../@types/user';
 import usersApi from '../../api/users';
 import axios from 'axios';
@@ -13,7 +13,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
     const userObj: string | null = localStorage.getItem('user-obj');
     const [user, setUser] = useState<IUser | null>(userObj ? JSON.parse(userObj) : null);
 
-    const login = (payload: ILogin) => {
+    const login = useCallback((payload: ILogin) => {
         return new Promise<IUser>(async (resolve, reject) => {
             try {
                 const res = await usersApi.login(payload);
@@ -34,7 +34,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
                 }
             }
         });
-    };
+    }, []);
 
     const signup = (payload: ISignup) => {
         return new Promise<IUser>(async (resolve, reject) => {
