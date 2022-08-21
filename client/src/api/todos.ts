@@ -23,8 +23,8 @@ export const createTodo = (todo: CreateTodo, limit: number, page: number) => {
     return api.post<TodoCreated>('/', todo, { params: { limit, page } });
 };
 
-export const updateTodo = (todoId: string, todo: ITodo) => {
-    return api.put<TodoModified>(`/${todoId}`, todo);
+export const updateTodo = (todoId: string, todo: ITodo, limit: number, page: number) => {
+    return api.put<TodoModified>(`/${todoId}`, todo, { params: { limit, page } });
 };
 
 export const completeTodo = (todoId: string, payload: Complete) => {

@@ -200,6 +200,19 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
+	if errLimit != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + err.Error())
+		return
+	}
+	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
+	if errPage != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + err.Error())
+		return
+	}
+
 	params := mux.Vars(req)
 	todoId, errId := primitive.ObjectIDFromHex(params["id"])
 	if errId != nil {
@@ -218,8 +231,21 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(errMongo.Error()))
 		return
 	}
+
+	newTodos, total, uncompleted, late, lastCompleted, errTodos := database.GetTodos(todo.UserId, limit, page)
+	if errTodos != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(err.Error()))
+		return
+	}
+
 	json := simplejson.New()
 	json.Set("nModified", nModified)
+	json.Set("todos", newTodos)
+	json.Set("total", total)
+	json.Set("uncompleted", uncompleted)
+	json.Set("late", late)
+	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {

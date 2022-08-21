@@ -139,27 +139,41 @@ const TodoProvider: React.FC<Props> = ({ children }) => {
         [user, limit, page]
     );
 
-    const updateTodo = (todo: ITodo) => {
-        return new Promise<TodoModified>(async (resolve, reject) => {
-            try {
-                if (!user) throw new Error('Vous avez été déconnecté, veuillez vous reconnecter à nouveau.');
-                const res = await todosApi.updateTodo(todo._id, todo);
-                await getTodos(user._id);
-                resolve(res.data);
-            } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    console.error('error message: ', error.message);
-                    console.error('error response', error.response);
-                    // 👇️ error: AxiosError<any, any>
-                    reject(error.response?.data);
-                } else {
-                    console.error('unexpected error: ', error);
-                    reject(error);
-                    //reject(new Error('An error has occured', { cause: error as Error }));
+    const updateTodo = useCallback(
+        (todo: ITodo) => {
+            return new Promise<TodoModified>(async (resolve, reject) => {
+                try {
+                    if (!user) throw new Error('Vous avez été déconnecté, veuillez vous reconnecter à nouveau.');
+                    const res = await todosApi.updateTodo(todo._id, todo, limit, page);
+                    if (res.data.nModified < 1) {
+                        throw new Error("La todo n'a pas pu être modifié, veuillez réessayer.");
+                    }
+                    const lastCompletedParsed: GraphData[] = res.data.lastCompleted.map((elt: GraphData) => ({ date: new Date(elt.date).toLocaleDateString(), total: elt.total }));
+                    localStorage.setItem('todos-obj', JSON.stringify(res.data.todos));
+                    localStorage.setItem('todos-total', JSON.stringify(res.data.total));
+                    localStorage.setItem('todos-lastCompleted', JSON.stringify(lastCompletedParsed));
+                    setTodos(res.data.todos ?? []);
+                    setTotal(res.data.total ?? 0);
+                    setUncompleted(res.data.uncompleted ?? 0);
+                    setLate(res.data.late ?? 0);
+                    setLastCompleted(lastCompletedParsed ?? []);
+                    resolve(res.data);
+                } catch (error) {
+                    if (axios.isAxiosError(error)) {
+                        console.error('error message: ', error.message);
+                        console.error('error response', error.response);
+                        // 👇️ error: AxiosError<any, any>
+                        reject(error.response?.data);
+                    } else {
+                        console.error('unexpected error: ', error);
+                        reject(error);
+                        //reject(new Error('An error has occured', { cause: error as Error }));
+                    }
                 }
-            }
-        });
-    };
+            });
+        },
+        [user, limit, page]
+    );
 
     const deleteTodo = (id: string) => {
         return new Promise<TodoDeleted>(async (resolve, reject) => {

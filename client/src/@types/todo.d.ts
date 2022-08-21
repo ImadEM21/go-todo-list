@@ -22,9 +22,9 @@ export interface TodoCreated extends GetTodos {
     _id: string;
 }
 
-export type TodoModified = {
+export interface TodoModified extends GetTodos {
     nModified: number;
-};
+}
 
 export type TodoDeleted = {
     nDeleted: number;
