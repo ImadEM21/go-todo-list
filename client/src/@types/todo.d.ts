@@ -26,9 +26,9 @@ export interface TodoModified extends GetTodos {
     nModified: number;
 }
 
-export type TodoDeleted = {
+export interface TodoDeleted extends GetTodos {
     nDeleted: number;
-};
+}
 
 export type Complete = {
     completed: boolean;

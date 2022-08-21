@@ -31,8 +31,8 @@ export const completeTodo = (todoId: string, payload: Complete) => {
     return api.put<TodoModified>(`/${todoId}/complete`, payload);
 };
 
-export const deleteTodo = (todoId: string) => {
-    return api.delete<TodoDeleted>(`/${todoId}`);
+export const deleteTodo = (todoId: string, userId: string, limit: number, page: number) => {
+    return api.delete<TodoDeleted>(`/${todoId}`, { params: { userId, limit, page } });
 };
 
 const todosApi = {
