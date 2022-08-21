@@ -8,7 +8,7 @@ import AuthProvider, { AuthContext } from './AuthContext';
 import { UserContextType } from '../../@types/user';
 import data from './testData';
 import { describe, test, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 
 describe('Todos Provider', () => {
     const TestComponent = () => {
@@ -33,11 +33,11 @@ describe('Todos Provider', () => {
         return (
             <ul role="todos">
                 {todos.map((todo) => (
-                    <li key={todo._id}>
+                    <li key={todo._id} role="todo">
                         {todo.title}
-                        <button role={`${todo._id}-complete`}>complete</button>
-                        <button role={`${todo._id}-update`}>update</button>
-                        <button role={`${todo._id}-delete`}>delete</button>
+                        <button>{todo.completed ? 'uncomplete' : 'complete'}</button>
+                        <button>update</button>
+                        <button>delete</button>
                     </li>
                 ))}
             </ul>
@@ -74,8 +74,13 @@ describe('Todos Provider', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'login' }));
         await waitFor(() => {
+            const list = screen.getByRole('todos');
+            const { getAllByRole } = within(list);
+            const items = getAllByRole('todo');
+
             expect(screen.queryByRole('button', { name: 'login' })).not.toBeInTheDocument();
-            expect(screen.getByRole('todos')).toBeInTheDocument();
+            expect(list).toBeInTheDocument();
+            expect(items.length).toBe(5);
         });
     });
 });
