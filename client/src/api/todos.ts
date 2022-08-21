@@ -19,8 +19,8 @@ export const getTodo = (todoId: string) => {
     return api.get<ITodo>(`/${todoId}`);
 };
 
-export const createTodo = (todo: CreateTodo) => {
-    return api.post<TodoCreated>('/', todo);
+export const createTodo = (todo: CreateTodo, limit: number, page: number) => {
+    return api.post<TodoCreated>('/', todo, { params: { limit, page } });
 };
 
 export const updateTodo = (todoId: string, todo: ITodo) => {

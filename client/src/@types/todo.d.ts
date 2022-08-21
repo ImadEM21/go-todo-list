@@ -18,9 +18,9 @@ export type GetTodos = {
     lastCompleted: GraphData[];
 };
 
-export type TodoCreated = {
+export interface TodoCreated extends GetTodos {
     _id: string;
-};
+}
 
 export type TodoModified = {
     nModified: number;
