@@ -18,17 +18,17 @@ export type GetTodos = {
     lastCompleted: GraphData[];
 };
 
-export type TodoCreated = {
+export interface TodoCreated extends GetTodos {
     _id: string;
-};
+}
 
-export type TodoModified = {
+export interface TodoModified extends GetTodos {
     nModified: number;
-};
+}
 
-export type TodoDeleted = {
+export interface TodoDeleted extends GetTodos {
     nDeleted: number;
-};
+}
 
 export type Complete = {
     completed: boolean;

@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { ITodo } from '../../@types/todo';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, useMediaQuery, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
+import { DialogTitle, DialogContent, DialogActions, Button, styled, TextField, FormControlLabel, Checkbox, CircularProgress, Alert } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import Editor from '../ui/Editor';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
@@ -9,7 +9,6 @@ import fr from 'date-fns/esm/locale/fr/index.js';
 import useEffectDebugger from '../../hooks/useEffectDebugger';
 import { TodoContext } from '../contexts/TodosContext';
 import { TodoContextType } from '../../@types/todo';
-import Transition from '../ui/Transition';
 import { TodoInputs } from '../../@types/todo';
 import StyledDialog from '../ui/StyledDialog';
 
@@ -42,8 +41,6 @@ const Form = styled('form')(({ theme }) => ({
 
 const DialogDetails = ({ open, setOpen, todo }: IDialogDetailsProps) => {
     const { updateTodo } = useContext(TodoContext) as TodoContextType;
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const {
         register,
         handleSubmit,

@@ -19,20 +19,20 @@ export const getTodo = (todoId: string) => {
     return api.get<ITodo>(`/${todoId}`);
 };
 
-export const createTodo = (todo: CreateTodo) => {
-    return api.post<TodoCreated>('/', todo);
+export const createTodo = (todo: CreateTodo, limit: number, page: number) => {
+    return api.post<TodoCreated>('/', todo, { params: { limit, page } });
 };
 
-export const updateTodo = (todoId: string, todo: ITodo) => {
-    return api.put<TodoModified>(`/${todoId}`, todo);
+export const updateTodo = (todoId: string, todo: ITodo, limit: number, page: number) => {
+    return api.put<TodoModified>(`/${todoId}`, todo, { params: { limit, page } });
 };
 
-export const completeTodo = (todoId: string, payload: Complete) => {
-    return api.put<TodoModified>(`/${todoId}/complete`, payload);
+export const completeTodo = (todoId: string, payload: Complete, userId: string, limit: number, page: number) => {
+    return api.put<TodoModified>(`/${todoId}/complete`, payload, { params: { userId, limit, page } });
 };
 
-export const deleteTodo = (todoId: string) => {
-    return api.delete<TodoDeleted>(`/${todoId}`);
+export const deleteTodo = (todoId: string, userId: string, limit: number, page: number) => {
+    return api.delete<TodoDeleted>(`/${todoId}`, { params: { userId, limit, page } });
 };
 
 const todosApi = {

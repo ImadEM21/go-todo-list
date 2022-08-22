@@ -1,4 +1,3 @@
-import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import PieChartIcon from '@mui/icons-material/PieChart';
@@ -43,14 +42,6 @@ export const MAIN_ROUTES: IRoute[] = [
         Icon: PieChartIcon,
         isLogout: false
     }
-    /*{
-        id: 4,
-        label: 'SUPPORT',
-        path: '/support',
-        slash: false,
-        Icon: ContactSupportIcon,
-        isLogout: false
-    }*/
 ];
 
 export const SECONDARY_ROUTES: IRoute[] = [

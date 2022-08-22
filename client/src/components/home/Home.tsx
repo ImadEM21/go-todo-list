@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Grid, Typography, styled } from '@mui/material';
 import Login from '../auth/Login';
 import Signup from '../auth/Signup';
 import RootHome from './RootHome';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
+import { UserContextType } from '../../@types/user';
 
 export interface IHomeProps {}
 
@@ -31,6 +34,15 @@ export const StyledTypo = styled(Typography)(({ theme }) => ({
 }));
 
 const Home: React.FC<IHomeProps> = (props) => {
+    const { user } = useContext(AuthContext) as UserContextType;
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate('/dashboard');
+        }
+    }, [navigate, user]);
+
     return (
         <RootHome>
             <StyledTypo variant="h5" align="center">
