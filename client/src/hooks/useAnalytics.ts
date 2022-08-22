@@ -7,7 +7,6 @@ const useAnalytics = () => {
     useEffect(() => {
         if (import.meta.env.PROD) {
             ReactGA.initialize(import.meta.env.VITE_GA_ID);
-            console.log('ID: ', import.meta.env.VITE_GA_ID);
         }
         setInitialized(true);
     }, []);
