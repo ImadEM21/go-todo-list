@@ -6,8 +6,9 @@ import { TodoContextType } from '../../../@types/todo';
 
 export interface IGraphProps {}
 
-const Graph = ({}: IGraphProps) => {
+const Graph = (props: IGraphProps) => {
     const { lastCompleted } = useContext(TodoContext) as TodoContextType;
+    console.log(lastCompleted);
     const theme = useTheme();
     return (
         <ResponsiveContainer width="100%" height="100%">

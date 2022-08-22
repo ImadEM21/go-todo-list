@@ -61,7 +61,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         setUser(null);
         localStorage.removeItem('user-token');
         localStorage.removeItem('user-obj');
-        localStorage.removeItem('todos-obj');
+        localStorage.removeItem('todos-data');
     };
 
     const updateUser = (payload: UpdateUser, userId: string) => {
