@@ -5,6 +5,8 @@ import AuthProvider from './components/contexts/AuthContext';
 import TodoProvider from './components/contexts/TodosContext';
 import { CircularProgress } from '@mui/material';
 import { routes } from './routes/routes';
+import useAnalytics from './hooks/useAnalytics';
+import Wrapper from './components/ga/Wrapper';
 
 export interface IAppProps {}
 
@@ -34,6 +36,8 @@ const appTheme: Theme = createTheme({
 });
 
 const App: React.FunctionComponent<IAppProps> = () => {
+    const { initialized } = useAnalytics();
+
     return (
         <StyledEngineProvider injectFirst={true}>
             <ThemeProvider theme={appTheme}>
@@ -56,9 +60,11 @@ const App: React.FunctionComponent<IAppProps> = () => {
                         >
                             <BrowserRouter>
                                 <Routes>
-                                    {routes.map((route) => (
-                                        <Route path={route.path} key={route.id} element={route.component} />
-                                    ))}
+                                    <Wrapper initialized={initialized}>
+                                        {routes.map((route) => (
+                                            <Route path={route.path} key={route.id} element={route.component} />
+                                        ))}
+                                    </Wrapper>
                                 </Routes>
                             </BrowserRouter>
                         </Suspense>
