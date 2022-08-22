@@ -59,13 +59,13 @@ const App: React.FunctionComponent<IAppProps> = () => {
                             }
                         >
                             <BrowserRouter>
-                                <Routes>
-                                    <Wrapper initialized={initialized}>
+                                <Wrapper initialized={initialized}>
+                                    <Routes>
                                         {routes.map((route) => (
                                             <Route path={route.path} key={route.id} element={route.component} />
                                         ))}
-                                    </Wrapper>
-                                </Routes>
+                                    </Routes>
+                                </Wrapper>
                             </BrowserRouter>
                         </Suspense>
                     </TodoProvider>
