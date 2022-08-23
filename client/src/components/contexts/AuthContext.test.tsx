@@ -53,7 +53,7 @@ describe('Auth provider', () => {
                 statusText: 'OK',
                 config: {},
                 headers: {},
-                data: { user: { _id: '123', ...signupForm, createdAt: new Date(), updatedAt: new Date() }, token: '123' }
+                data: { user: { _id: '123', ...signupForm, createdAt: new Date(), updatedAt: new Date(), avatar: '' }, token: '123' }
             })
         );
 
@@ -82,7 +82,7 @@ describe('Auth provider', () => {
                 statusText: 'OK',
                 config: {},
                 headers: {},
-                data: { user: { _id: '123', ...updateUserForm, createdAt: new Date(), updatedAt: new Date() }, nModified: 1 }
+                data: { user: { _id: '123', ...updateUserForm, createdAt: new Date(), updatedAt: new Date(), avatar: '' }, nModified: 1 }
             })
         );
 
@@ -158,7 +158,7 @@ describe('Auth provider', () => {
                 statusText: 'OK',
                 config: {},
                 headers: {},
-                data: { user: { _id: '123', email: 'imad@mail.com', firstName: 'Imad', lastName: 'Elmahrad', createdAt: new Date(), updatedAt: new Date() }, token: '123' }
+                data: { user: { _id: '123', email: 'imad@mail.com', firstName: 'Imad', lastName: 'Elmahrad', createdAt: new Date(), updatedAt: new Date(), avatar: '' }, token: '123' }
             })
         );
 

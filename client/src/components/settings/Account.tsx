@@ -160,7 +160,7 @@ const Account = (props: IAccountProps) => {
             </Form>
             <Snackbar open={success} autoHideDuration={6000} onClose={handleCloseSuccess}>
                 <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                    Vos informations ont bient été mises à jour.
+                    Vos informations ont bien été mises à jour.
                 </Alert>
             </Snackbar>
             <Snackbar open={error} autoHideDuration={6000} onClose={handleCloseError}>

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ILogin, ISignup, UpdatePassword, UpdateUser, UserDeleted, UserLogin, UserUpdated } from '../@types/user';
+import { ILogin, ISignup, UpdatePassword, UpdateUser, UserDeleted, UserLogin, UserUpdated, UserUpdatedNumber } from '../@types/user';
 
 const token = localStorage.getItem('user-token');
 
@@ -24,11 +24,15 @@ export const updateUser = (payload: UpdateUser, userId: string) => {
 };
 
 export const updatePassword = (payload: UpdatePassword, userId: string) => {
-    return api.put<UserUpdated>(`/${userId}/password`, payload);
+    return api.put<UserUpdatedNumber>(`/${userId}/password`, payload);
 };
 
 export const deleteUser = (userId: string) => {
     return api.delete<UserDeleted>(`/${userId}`);
+};
+
+export const updateAvatar = (userId: string, payload: FormData) => {
+    return api.put<UserUpdated>(`/${userId}/avatar`, payload);
 };
 
 const usersApi = {
@@ -36,7 +40,8 @@ const usersApi = {
     signup,
     updateUser,
     updatePassword,
-    deleteUser
+    deleteUser,
+    updateAvatar
 };
 
 export default usersApi;

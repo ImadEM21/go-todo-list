@@ -20,7 +20,7 @@ const Settings = (props: ISettingsProps) => {
                 <Account />
                 <Divider />
                 <Typography component="h1" variant={isMobile ? 'h4' : 'h3'} sx={{ color: theme.palette.text.primary }} mt="2rem">
-                    Photo de profil
+                    Avatar
                 </Typography>
                 <UserAvatar />
                 <Divider />

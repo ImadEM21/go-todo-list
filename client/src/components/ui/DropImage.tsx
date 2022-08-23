@@ -36,7 +36,8 @@ const StyledSection = styled('section')(({ theme }) => ({
     borderRadius: '1.5rem',
     padding: '1rem',
     cursor: 'pointer',
-    color: theme.palette.text.primary
+    color: theme.palette.text.primary,
+    textAlign: 'center'
 }));
 
 export interface IDropImageProps {
@@ -77,7 +78,7 @@ const DropImage = ({ files, setFiles, id, name, placeholder }: IDropImageProps) 
     const thumbs = files.map((file) => (
         <div style={thumb} key={file.name}>
             <div style={thumbInner}>
-                <Avatar alt={file.name} src={file.preview} sx={{ width: 56, height: 56 }} />
+                <Avatar alt={file.name} src={file.preview} sx={{ width: 192, height: 192, mx: 'auto', mt: '1rem' }} />
             </div>
         </div>
     ));
