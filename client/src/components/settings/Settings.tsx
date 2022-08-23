@@ -4,6 +4,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import Account from './Account';
 import Password from './Password';
 import DeleteAccount from './DeleteAccount';
+import UserAvatar from './UserAvatar';
 
 export interface ISettingsProps {}
 
@@ -17,6 +18,11 @@ const Settings = (props: ISettingsProps) => {
                     Mes informations
                 </Typography>
                 <Account />
+                <Divider />
+                <Typography component="h1" variant={isMobile ? 'h4' : 'h3'} sx={{ color: theme.palette.text.primary }} mt="2rem">
+                    Avatar
+                </Typography>
+                <UserAvatar />
                 <Divider />
                 <Typography component="h1" variant={isMobile ? 'h4' : 'h3'} sx={{ color: theme.palette.text.primary }} mt="2rem">
                     Changer mon mot de passe

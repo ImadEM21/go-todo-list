@@ -1,8 +1,7 @@
 import { useContext } from 'react';
-import { styled, Grid, useTheme, Typography, IconButton, SvgIconTypeMap } from '@mui/material';
+import { styled, Grid, useTheme, Typography, IconButton, SvgIconTypeMap, Avatar } from '@mui/material';
 import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { useNavigate } from 'react-router-dom';
 import { capitalizeFirstLetter } from '../../utils/funcs';
@@ -123,7 +122,7 @@ const UserInfo = (props: IUserInfoProps) => {
                     </Typography>
                 )}
                 <IconButton color="info" onClick={() => navigate('/settings')} aria-describedby={user ? `${user.firstName} ${user.lastName.toUpperCase()}` : 'Utilisateur'}>
-                    <AccountCircleIcon fontSize="large" />
+                    {<Avatar alt={user?.firstName} src={user?.avatar} sx={{ width: 35, height: 35 }} />}
                 </IconButton>
             </Grid>
         </Root>

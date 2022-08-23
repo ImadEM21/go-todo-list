@@ -3,11 +3,13 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"net/mail"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	database "todo-list-api/database"
@@ -15,6 +17,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -154,6 +157,81 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func UpdateAvatar(res http.ResponseWriter, req *http.Request) {
+	req.ParseMultipartForm(32 << 20)
+
+	params := mux.Vars(req)
+	userId, errId := primitive.ObjectIDFromHex(params["id"])
+	if errId != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + errId.Error())
+		return
+	}
+
+	file, header, errFile := req.FormFile("avatar")
+	if errFile != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errFile.Error()))
+		return
+	}
+	defer file.Close()
+
+	name := strings.ToLower(strings.Split(header.Filename, ".")[0])
+	extension := strings.ToLower(strings.Split(header.Filename, ".")[1])
+
+	fullName := name + uuid.NewString() + "." + extension
+
+	currentPath, errPath := os.Getwd()
+	if errPath != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errPath.Error()))
+		return
+	}
+
+	fullPath := currentPath + "/static/" + fullName
+
+	f, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(err.Error()))
+		return
+	}
+
+	io.Copy(f, file)
+
+	fileUrl := os.Getenv("BACK_URL") + "/static/" + fullName
+
+	nModified, errAvatar := database.UpdateAvatar(userId, fileUrl)
+	if errAvatar != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errAvatar.Error()))
+		return
+	}
+
+	updatedUser, errUpdate := database.GetUser(userId, false)
+	if errUpdate != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errUpdate.Error()))
+		return
+	}
+
+	json := simplejson.New()
+	json.Set("nModified", nModified)
+	json.Set("user", updatedUser)
+
+	payloadJson, errJson := json.MarshalJSON()
+	if errJson != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payloadJson)
+	return
+}
+
 func UpdatePassword(res http.ResponseWriter, req *http.Request) {
 	var payload UpdateUserPassword
 	err := middlewares.DecodeJSONBody(res, req, &payload)
@@ -205,14 +283,8 @@ func UpdatePassword(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(errMongo.Error()))
 		return
 	}
-	updatedUser, errUpdate := database.GetUser(userId, false)
-	if errUpdate != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errUpdate.Error()))
-		return
-	}
+
 	json := simplejson.New()
-	json.Set("user", updatedUser)
 	json.Set("nModified", nModified)
 
 	payloadJson, errJson := json.MarshalJSON()

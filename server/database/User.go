@@ -18,6 +18,7 @@ type User struct {
 	Password  string             `bson:"password" json:"password"`
 	FirstName string             `bson:"firstName" json:"firstName"`
 	LastName  string             `bson:"lastName" json:"lastName"`
+	Avatar    string             `bson:"avatar" json:"avatar"`
 }
 
 func GetUsers() ([]*User, error) {
@@ -156,4 +157,18 @@ func GetUserByEmail(email string) (*User, error) {
 		return user, err
 	}
 	return user, nil
+}
+
+func UpdateAvatar(userId primitive.ObjectID, fileUrl string) (int64, error) {
+	client, ctx := InitDb()
+	defer CloseDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	result, err := coll.UpdateByID(ctx, userId, bson.D{{Key: "$set", Value: bson.D{{Key: "avatar", Value: fileUrl}}}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, mongo.ErrNoDocuments
+		}
+		return 0, err
+	}
+	return result.ModifiedCount, nil
 }

@@ -3,6 +3,7 @@ export interface IUser {
     email: string;
     firstName: string;
     lastName: string;
+    avatar: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -44,6 +45,10 @@ export type UserUpdated = {
     nModified: number;
 };
 
+export type UserUpdatedNumber = {
+    nModified: number;
+};
+
 export type UserContextType = {
     user: IUser | null;
     login: (payload: ILogin) => Promise<IUser>;
@@ -51,5 +56,6 @@ export type UserContextType = {
     logout: () => void;
     updateUser: (payload: UpdateUser, userId: string) => Promise<IUser>;
     updatePassword: (payload: UpdatePassword, userId: string) => Promise<boolean>;
+    updateAvatar: (payload: FormData, userId: string) => Promise<boolean>;
     deleteUser: (userId: string) => Promise<UserDeleted>;
 };
