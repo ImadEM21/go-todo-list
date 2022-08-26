@@ -1,22 +1,29 @@
 import { useEffect, PropsWithChildren } from 'react';
 import { useLocation } from 'react-router-dom';
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
+import useAnalytics from '../../hooks/useAnalytics';
+import CookiesHandler from './CookiesHandler';
 
 export interface IWrapperProps {
-    initialized: boolean;
     children: PropsWithChildren<any>;
 }
 
-const Wrapper = ({ initialized, children }: IWrapperProps) => {
+const Wrapper = ({ children }: IWrapperProps) => {
     const location = useLocation();
+    const { isConsent } = useAnalytics();
 
     useEffect(() => {
-        if (initialized) {
-            ReactGA.pageview(location.pathname + location.search);
+        if (isConsent === 'true') {
+            ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search });
         }
-    }, [initialized, location]);
+    }, [location, isConsent]);
 
-    return children;
+    return (
+        <>
+            {children}
+            <CookiesHandler />
+        </>
+    );
 };
 
 export default Wrapper;
