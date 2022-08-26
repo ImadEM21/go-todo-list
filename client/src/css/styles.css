@@ -1,0 +1,11 @@
+.accept-rcc-btn {
+    background-color: #f0c090 !important;
+    color: white !important;
+}
+
+.refuse-rcc-btn {
+    background-color: white !important;
+    color: #f0c090 !important;
+    border: 1px solid rgba(240, 192, 144, 0.5) !important;
+    border-radius: 10px !important;
+}

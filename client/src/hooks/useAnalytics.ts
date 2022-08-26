@@ -1,18 +1,38 @@
 import { useEffect, useState } from 'react';
-import ReactGA from 'react-ga';
+import { Cookies, getCookieConsentValue } from 'react-cookie-consent';
+import { initGA } from '../utils/ga-utils';
 
 const useAnalytics = () => {
-    const [initialized, setInitialized] = useState(false);
+    const [isConsent] = useState(getCookieConsentValue());
+
+    const handleAcceptCookie = () => {
+        let id: string | undefined = import.meta.env.VITE_GA_ID;
+        if (id) {
+            initGA(id);
+        }
+    };
 
     useEffect(() => {
-        if (import.meta.env.PROD) {
-            ReactGA.initialize(import.meta.env.VITE_GA_ID);
+        console.log('effect consent', isConsent);
+    }, [isConsent]);
+
+    const handleDeclineCookie = () => {
+        // remove google analytics cookies
+        Cookies.remove('_ga');
+        Cookies.remove('_gat');
+        Cookies.remove('_gid');
+    };
+
+    useEffect(() => {
+        if (isConsent === 'true') {
+            handleAcceptCookie();
         }
-        setInitialized(true);
-    }, []);
+    }, [isConsent]);
 
     return {
-        initialized
+        isConsent,
+        handleAcceptCookie,
+        handleDeclineCookie
     };
 };
 
