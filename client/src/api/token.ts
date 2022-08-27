@@ -1,10 +1,6 @@
-import axios from 'axios';
+import api from './apiUtils';
 
-const path = import.meta.env.PROD ? '/api/tokens' : 'http://localhost:3000/api/tokens';
-
-const api = axios.create({
-    baseURL: path
-});
+const PREFIX = 'tokens';
 
 type CreateToken = {
     email: string;
@@ -15,11 +11,11 @@ type ResetPassword = {
 };
 
 export const createToken = (payload: CreateToken) => {
-    return api.post('/', payload);
+    return api.post(`/${PREFIX}/`, payload);
 };
 
 export const resetPassword = (userId: string, token: string, payload: ResetPassword) => {
-    return api.post(`/${userId}/${token}`, payload);
+    return api.post(`/${PREFIX}/${userId}/${token}`, payload);
 };
 
 const tokensApi = {
