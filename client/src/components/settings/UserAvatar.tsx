@@ -7,6 +7,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { UserContextType } from '../../@types/user';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Alert from '../ui/Alert';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const PREFIX = 'UserAvatar';
 
@@ -33,11 +34,12 @@ export interface CustomFile extends File {
 export interface IUserAvatarProps {}
 
 const UserAvatar = (props: IUserAvatarProps) => {
-    const { user, updateAvatar } = useContext(AuthContext) as UserContextType;
+    const { user, updateAvatar, deleteAvatar } = useContext(AuthContext) as UserContextType;
     const location = useLocation();
     const navigate = useNavigate();
     const [files, setFiles] = useState<CustomFile[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingDelete, setLoadingDelete] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
 
@@ -64,6 +66,27 @@ const UserAvatar = (props: IUserAvatarProps) => {
             setError(true);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteAvatar = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        setLoadingDelete(true);
+        if (!user) {
+            navigate('/', { state: { from: location } });
+            return;
+        }
+        try {
+            const success = await deleteAvatar(user._id);
+            if (success) {
+                setSuccess(true);
+            } else {
+                setError(true);
+            }
+        } catch (error) {
+            console.error(error);
+            setError(true);
+        } finally {
+            setLoadingDelete(false);
         }
     };
 
@@ -96,7 +119,12 @@ const UserAvatar = (props: IUserAvatarProps) => {
                     />
                     {!files[0] && user?.avatar && <Avatar alt={`${user.firstName} ${user.lastName}`} src={user.avatar} sx={{ width: 192, height: 192, mx: 'auto', mt: '1rem' }} />}
                 </Grid>
-                <Grid item xs={12} display="flex" justifyContent="end">
+                <Grid item xs={12} display="flex" justifyContent="end" gap="2rem">
+                    {user?.avatar && (
+                        <LoadingButton loading={loadingDelete} type="button" onClick={handleDeleteAvatar} loadingPosition="start" startIcon={<DeleteIcon />} variant="contained" color="error">
+                            Supprimer mon avatar
+                        </LoadingButton>
+                    )}
                     <LoadingButton loading={loading} disabled={files.length < 1} type="submit" loadingPosition="start" startIcon={<SaveIcon />} variant="contained" color="info">
                         Enregistrer mon avatar
                     </LoadingButton>

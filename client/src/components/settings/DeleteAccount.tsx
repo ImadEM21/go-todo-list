@@ -47,7 +47,7 @@ const DeleteAccount = (props: IDeleteAccountProps) => {
     return (
         <>
             <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '1rem', marginTop: '1rem' }}>
-                <Button onClick={() => setOpen(true)} variant="contained" color="info" startIcon={<DeleteIcon />}>
+                <Button onClick={() => setOpen(true)} variant="contained" color="error" startIcon={<DeleteIcon />}>
                     Je supprime mon compte
                 </Button>
             </div>
