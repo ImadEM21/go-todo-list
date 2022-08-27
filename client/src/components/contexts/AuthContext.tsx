@@ -110,6 +110,29 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         });
     }, []);
 
+    const deleteAvatar = useCallback((userId: string) => {
+        return new Promise<boolean>(async (resolve, reject) => {
+            try {
+                const res = await usersApi.deleteAvatar(userId);
+                if (res.data.nModified < 1) {
+                    throw new Error("Votre avatar n'a pas pu être mis à jour, veuillez réessayer.");
+                }
+                localStorage.setItem('user-obj', JSON.stringify(res.data.user));
+                setUser(res.data.user);
+                resolve(true);
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    console.log('error response', error.response);
+                    reject(error.response?.data);
+                } else {
+                    console.log('unexpected error: ', error);
+                    reject(error);
+                }
+            }
+        });
+    }, []);
+
     const updatePassword = (payload: UpdatePassword, userId: string) => {
         return new Promise<boolean>(async (resolve, reject) => {
             try {
@@ -153,7 +176,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         });
     };
 
-    return <AuthContext.Provider value={{ user, login, signup, logout, updateUser, updatePassword, updateAvatar, deleteUser }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ user, login, signup, logout, updateUser, updatePassword, updateAvatar, deleteAvatar, deleteUser }}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;

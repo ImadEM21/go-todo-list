@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -206,6 +207,72 @@ func UpdateAvatar(res http.ResponseWriter, req *http.Request) {
 	if errAvatar != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(errAvatar.Error()))
+		return
+	}
+
+	updatedUser, errUpdate := database.GetUser(userId, false)
+	if errUpdate != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errUpdate.Error()))
+		return
+	}
+
+	json := simplejson.New()
+	json.Set("nModified", nModified)
+	json.Set("user", updatedUser)
+
+	payloadJson, errJson := json.MarshalJSON()
+	if errJson != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(errJson.Error()))
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(payloadJson)
+	return
+}
+
+func DeleteAvatar(res http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	userId, errId := primitive.ObjectIDFromHex(params["id"])
+	if errId != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + errId.Error())
+		return
+	}
+
+	user, errUser := database.GetUser(userId, false)
+	if errUser != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(res).Encode("No id provided " + errUser.Error())
+		return
+	}
+
+	filename := strings.Split(user.Avatar, "/static/")[1]
+	fmt.Println(filename)
+
+	currentPath, errPath := os.Getwd()
+	if errPath != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errPath.Error()))
+		return
+	}
+
+	fullPath := currentPath + "/static/" + filename
+
+	errFile := os.Remove(fullPath)
+	if errFile != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errFile.Error()))
+		return
+	}
+
+	nModified, errModified := database.UpdateAvatar(userId, "")
+	if errModified != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(errModified.Error()))
 		return
 	}
 

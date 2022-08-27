@@ -27,13 +27,18 @@ export const updateAvatar = (userId: string, payload: FormData) => {
     return api.put<UserUpdated>(`/${PREFIX}/${userId}/avatar`, payload);
 };
 
+export const deleteAvatar = (userId: string) => {
+    return api.delete<UserUpdated>(`/${PREFIX}/${userId}/avatar`);
+};
+
 const usersApi = {
     login,
     signup,
     updateUser,
     updatePassword,
     deleteUser,
-    updateAvatar
+    updateAvatar,
+    deleteAvatar
 };
 
 export default usersApi;

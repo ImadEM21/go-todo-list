@@ -57,5 +57,6 @@ export type UserContextType = {
     updateUser: (payload: UpdateUser, userId: string) => Promise<IUser>;
     updatePassword: (payload: UpdatePassword, userId: string) => Promise<boolean>;
     updateAvatar: (payload: FormData, userId: string) => Promise<boolean>;
+    deleteAvatar: (userId: string) => Promise<boolean>;
     deleteUser: (userId: string) => Promise<UserDeleted>;
 };
