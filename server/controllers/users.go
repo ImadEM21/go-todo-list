@@ -127,6 +127,7 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 		Password:  user.Password,
 		FirstName: payload.FirstName,
 		LastName:  payload.LastName,
+		Avatar:    user.Avatar,
 	}
 	nModified, errMongo := database.UpdateUser(newUser, userId)
 	if errMongo != nil {

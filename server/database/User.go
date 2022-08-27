@@ -61,9 +61,9 @@ func GetUser(userId primitive.ObjectID, selectPassword bool) (*User, error) {
 	coll := client.Database("todos").Collection("users")
 	var opts *options.FindOneOptions
 	if selectPassword {
-		opts = options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
-	} else {
 		opts = options.FindOne()
+	} else {
+		opts = options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
 	}
 	errColl := coll.FindOne(ctx, bson.D{{Key: "_id", Value: userId}}, opts).Decode(&user)
 	if errColl != nil {
