@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -15,39 +13,20 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
 	envErr := godotenv.Load()
 	if envErr != nil {
-		log.Println("No .env file found")
+		log.Fatal("No .env file found")
 	}
 
-	client, ctx := database.InitDb()
-	defer database.CloseDb(&client, ctx)
-	coll := client.Database("todos").Collection("users")
-	_, err := coll.Indexes().CreateOne(
-		context.Background(),
-		mongo.IndexModel{
-			Keys:    bson.D{{Key: "email", Value: 1}},
-			Options: options.Index().SetUnique(true),
-		},
-	)
+	err := database.SetEmailIndex()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
 	router := mux.NewRouter().StrictSlash(false)
-
-	var dir string
-
-	flag.StringVar(&dir, "dir", ".", "the directory to serve files from. Defaults to the current dir")
-	flag.Parse()
-
-	router.PathPrefix("/static").Handler(http.StripPrefix("/", http.FileServer(http.Dir(dir))))
 
 	n := negroni.Classic()
 	n.UseHandler(router)
@@ -55,6 +34,7 @@ func main() {
 	routes.HandleTodosRequest(router)
 	routes.HandleUsersRequest(router)
 	routes.HandleTokensRequest(router)
+	routes.HandleStaticFiles(router)
 
 	opts := cors.Options{
 		AllowedOrigins: []string{os.Getenv("ORIGIN_ALLOWED")},

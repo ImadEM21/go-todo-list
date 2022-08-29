@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/mail"
 	"os"
 	"regexp"
 	"strings"
@@ -15,6 +14,7 @@ import (
 
 	database "todo-list-api/database"
 	middlewares "todo-list-api/middlewares"
+	utils "todo-list-api/utils"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/dgrijalva/jwt-go"
@@ -136,14 +136,13 @@ func UpdateUser(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(errMongo.Error()))
 		return
 	}
-	updatedUser, errUpdate := database.GetUser(userId, false)
-	if errUpdate != nil {
+
+	json, errFetchUser := utils.GetJsonWithUser(userId)
+	if errFetchUser != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errUpdate.Error()))
+		res.Write([]byte(errFetchUser.Error()))
 		return
 	}
-	json := simplejson.New()
-	json.Set("user", updatedUser)
 	json.Set("nModified", nModified)
 
 	payloadJson, errJson := json.MarshalJSON()
@@ -210,16 +209,14 @@ func UpdateAvatar(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	updatedUser, errUpdate := database.GetUser(userId, false)
-	if errUpdate != nil {
+	json, errFetchUser := utils.GetJsonWithUser(userId)
+	if errFetchUser != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errUpdate.Error()))
+		res.Write([]byte(errFetchUser.Error()))
 		return
 	}
 
-	json := simplejson.New()
 	json.Set("nModified", nModified)
-	json.Set("user", updatedUser)
 
 	payloadJson, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -276,16 +273,13 @@ func DeleteAvatar(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	updatedUser, errUpdate := database.GetUser(userId, false)
-	if errUpdate != nil {
+	json, errFetchUser := utils.GetJsonWithUser(userId)
+	if errFetchUser != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errUpdate.Error()))
+		res.Write([]byte(errFetchUser.Error()))
 		return
 	}
-
-	json := simplejson.New()
 	json.Set("nModified", nModified)
-	json.Set("user", updatedUser)
 
 	payloadJson, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -466,11 +460,6 @@ func Login(res http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func ValidEmail(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err == nil
-}
-
 func Signup(res http.ResponseWriter, req *http.Request) {
 	var user *database.User
 	err := middlewares.DecodeJSONBody(res, req, &user)
@@ -499,7 +488,7 @@ func Signup(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !ValidEmail(user.Email) {
+	if !utils.ValidEmail(user.Email) {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("L'adresse mail n'est pas valide"))
 		return

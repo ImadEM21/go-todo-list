@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -29,4 +30,21 @@ func CloseDb(client *mongo.Client, ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func SetEmailIndex() error {
+	client, ctx := InitDb()
+	defer CloseDb(&client, ctx)
+	coll := client.Database("todos").Collection("users")
+	_, err := coll.Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.D{{Key: "email", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }

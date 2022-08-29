@@ -12,10 +12,6 @@ const useAnalytics = () => {
         }
     };
 
-    useEffect(() => {
-        console.log('effect consent', isConsent);
-    }, [isConsent]);
-
     const handleDeclineCookie = () => {
         // remove google analytics cookies
         Cookies.remove('_ga');
