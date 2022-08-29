@@ -5,13 +5,12 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	database "todo-list-api/database"
 	middlewares "todo-list-api/middlewares"
+	utils "todo-list-api/utils"
 
-	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,37 +20,19 @@ type Complete struct {
 }
 
 func GetTodos(res http.ResponseWriter, req *http.Request) {
-	userId, err := primitive.ObjectIDFromHex(req.URL.Query().Get("userId"))
-	if err != nil {
+	userId, _, limit, page, errParams := utils.GetTodosParams(req, []string{"userId", "limit", "page"})
+	if errParams != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("No user id provided " + err.Error())
+		json.NewEncoder(res).Encode(errParams.Error())
 		return
 	}
-	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
-	if errLimit != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + errLimit.Error())
-		return
-	}
-	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
-	if errPage != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + errPage.Error())
-		return
-	}
-	todos, total, uncompleted, late, lastCompleted, err := database.GetTodos(userId, limit, page)
+
+	json, err := utils.GetJsonWithTodos(userId, limit, page)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte(err.Error()))
 		return
 	}
-
-	json := simplejson.New()
-	json.Set("todos", todos)
-	json.Set("total", total)
-	json.Set("uncompleted", uncompleted)
-	json.Set("late", late)
-	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -89,11 +70,6 @@ func GetTodo(res http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func isDateValue(stringDate string) bool {
-	_, err := time.Parse(time.RFC3339, stringDate)
-	return err == nil
-}
-
 func CreateTodo(res http.ResponseWriter, req *http.Request) {
 	var todo *database.Todo
 	err := middlewares.DecodeJSONBody(res, req, &todo)
@@ -108,16 +84,10 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
-	if errLimit != nil {
+	_, _, limit, page, errParams := utils.GetTodosParams(req, []string{"limit", "page"})
+	if errParams != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + errLimit.Error())
-		return
-	}
-	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
-	if errPage != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + errPage.Error())
+		json.NewEncoder(res).Encode(errParams.Error())
 		return
 	}
 
@@ -157,20 +127,13 @@ func CreateTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newTodos, total, uncompleted, late, lastCompleted, errTodos := database.GetTodos(todo.UserId, limit, page)
-	if errTodos != nil {
+	json, err := utils.GetJsonWithTodos(todo.UserId, limit, page)
+	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errTodos.Error()))
+		res.Write([]byte(err.Error()))
 		return
 	}
-
-	json := simplejson.New()
 	json.Set("_id", insertedId)
-	json.Set("todos", newTodos)
-	json.Set("total", total)
-	json.Set("uncompleted", uncompleted)
-	json.Set("late", late)
-	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -200,24 +163,10 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
-	if errLimit != nil {
+	_, todoId, limit, page, errParams := utils.GetTodosParams(req, []string{"todoId", "limit", "page"})
+	if errParams != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + errLimit.Error())
-		return
-	}
-	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
-	if errPage != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + errPage.Error())
-		return
-	}
-
-	params := mux.Vars(req)
-	todoId, errId := primitive.ObjectIDFromHex(params["id"])
-	if errId != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("No id provided " + errId.Error())
+		json.NewEncoder(res).Encode(errParams.Error())
 		return
 	}
 	*&todo.ID = todoId
@@ -232,20 +181,13 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newTodos, total, uncompleted, late, lastCompleted, errTodos := database.GetTodos(todo.UserId, limit, page)
-	if errTodos != nil {
+	json, err := utils.GetJsonWithTodos(todo.UserId, limit, page)
+	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errTodos.Error()))
+		res.Write([]byte(err.Error()))
 		return
 	}
-
-	json := simplejson.New()
 	json.Set("nModified", nModified)
-	json.Set("todos", newTodos)
-	json.Set("total", total)
-	json.Set("uncompleted", uncompleted)
-	json.Set("late", late)
-	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -262,30 +204,10 @@ func UpdateTodo(res http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteTodo(res http.ResponseWriter, req *http.Request) {
-	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
-	if errLimit != nil {
+	userId, todoId, limit, page, errParams := utils.GetTodosParams(req, []string{"userId", "todoId", "limit", "page"})
+	if errParams != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + errLimit.Error())
-		return
-	}
-	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
-	if errPage != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + errPage.Error())
-		return
-	}
-	userId, errUserId := primitive.ObjectIDFromHex(req.URL.Query().Get("userId"))
-	if errUserId != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("L'ID de l'utilisateur n'a pas été fourni " + errUserId.Error())
-		return
-	}
-
-	params := mux.Vars(req)
-	todoId, errTodoId := primitive.ObjectIDFromHex(params["id"])
-	if errTodoId != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("No id provided " + errTodoId.Error())
+		json.NewEncoder(res).Encode(errParams.Error())
 		return
 	}
 
@@ -296,20 +218,13 @@ func DeleteTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newTodos, total, uncompleted, late, lastCompleted, errTodos := database.GetTodos(userId, limit, page)
-	if errTodos != nil {
+	json, err := utils.GetJsonWithTodos(userId, limit, page)
+	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errTodos.Error()))
+		res.Write([]byte(err.Error()))
 		return
 	}
-
-	json := simplejson.New()
 	json.Set("nDeleted", nDeleted)
-	json.Set("todos", newTodos)
-	json.Set("total", total)
-	json.Set("uncompleted", uncompleted)
-	json.Set("late", late)
-	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {
@@ -339,30 +254,10 @@ func CompleteTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	limit, errLimit := strconv.ParseInt(req.URL.Query().Get("limit"), 0, 64)
-	if errLimit != nil {
+	userId, todoId, limit, page, errParams := utils.GetTodosParams(req, []string{"userId", "todoId", "limit", "page"})
+	if errParams != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La limite fournie n'est pas valide " + errLimit.Error())
-		return
-	}
-	page, errPage := strconv.ParseInt(req.URL.Query().Get("page"), 0, 64)
-	if errPage != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("La page fournie n'est pas valide " + errPage.Error())
-		return
-	}
-	userId, errUserId := primitive.ObjectIDFromHex(req.URL.Query().Get("userId"))
-	if errUserId != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("L'ID de l'utilisateur n'a pas été fourni " + errUserId.Error())
-		return
-	}
-
-	params := mux.Vars(req)
-	todoId, errTodoId := primitive.ObjectIDFromHex(params["id"])
-	if errTodoId != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode("No id provided " + errTodoId.Error())
+		json.NewEncoder(res).Encode(errParams.Error())
 		return
 	}
 
@@ -373,20 +268,13 @@ func CompleteTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newTodos, total, uncompleted, late, lastCompleted, errTodos := database.GetTodos(userId, limit, page)
-	if errTodos != nil {
+	json, err := utils.GetJsonWithTodos(userId, limit, page)
+	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(errTodos.Error()))
+		res.Write([]byte(err.Error()))
 		return
 	}
-
-	json := simplejson.New()
 	json.Set("nModified", nModified)
-	json.Set("todos", newTodos)
-	json.Set("total", total)
-	json.Set("uncompleted", uncompleted)
-	json.Set("late", late)
-	json.Set("lastCompleted", lastCompleted)
 
 	payload, errJson := json.MarshalJSON()
 	if errJson != nil {

@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"log"
@@ -13,12 +11,12 @@ import (
 
 	"todo-list-api/database"
 	middlewares "todo-list-api/middlewares"
+	utils "todo-list-api/utils"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/mailjet/mailjet-apiv3-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,41 +26,6 @@ type Email struct {
 
 type Password struct {
 	Password string `bson:"password" json:"password"`
-}
-
-func getToken(user *database.User) (*database.Token, error) {
-	token, errToken := database.GetTokenByUserId(user.ID)
-	if errToken != nil && errToken != mongo.ErrNoDocuments {
-		return nil, errToken
-	}
-	if token == nil {
-		hexString, errString := getRandomHexString()
-		if errString != nil {
-			return nil, errString
-		}
-		newToken := &database.Token{
-			ID:        primitive.NewObjectID(),
-			UserId:    user.ID,
-			Token:     hexString,
-			CreatedAt: time.Now(),
-		}
-		token, err := database.CreateToken(newToken)
-		if err != nil {
-			return nil, err
-		}
-		return token, nil
-	}
-	return token, nil
-}
-
-func getRandomHexString() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	encodedString := hex.EncodeToString(b)
-	return encodedString, nil
 }
 
 func CreateToken(res http.ResponseWriter, req *http.Request) {
@@ -79,7 +42,7 @@ func CreateToken(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !ValidEmail(email.Email) {
+	if !utils.ValidEmail(email.Email) {
 		res.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(res).Encode("L'adresse mail n'est pas valide")
 		return
@@ -92,7 +55,7 @@ func CreateToken(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	token, errToken := getToken(user)
+	token, errToken := utils.GetToken(user)
 	if errToken != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(res).Encode(errToken.Error())
