@@ -4,8 +4,8 @@ export interface IUser {
     firstName: string;
     lastName: string;
     avatar: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface ILogin {
