@@ -46,7 +46,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler:      handler,
-		Addr:         "127.0.0.1:3000",
+		Addr:         "0.0.0.0:3000",
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
