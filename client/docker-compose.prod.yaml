@@ -1,0 +1,13 @@
+version: '3.0'
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: app
+        ports:
+            - 80:80
+            - 443:443
+        environment:
+            - VITE_GA_ID=G-HEBBBVZWZ5
+        restart: always
