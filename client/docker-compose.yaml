@@ -1,0 +1,13 @@
+version: '3.0'
+services:
+    app:
+        build:
+            context: .
+            dockerfile: dev.Dockerfile
+        container_name: app
+        ports:
+            - 8000:8000
+        environment:
+            - VITE_GA_ID=G-HEBBBVZWZ5
+        volumes:
+            - ./src:/opt/client/src:cached
