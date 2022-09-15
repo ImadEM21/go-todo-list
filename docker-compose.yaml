@@ -1,0 +1,48 @@
+version: "3.9"
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: dev.Dockerfile
+    container_name: server
+    ports:
+      - 3000:3000
+    environment:
+      - PORT=3000
+    depends_on:
+      - mongo
+    volumes:
+      - ./server:/opt/server:cached
+      - ./server/static:/server/static
+    restart: always
+  mongo:
+    image: mongo:4.4.3
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./server//db:/data/db
+    restart: always
+  front:
+    build: 
+      context: ./client
+      dockerfile: dev.Dockerfile
+    container_name: front
+    ports:
+      - 8000:8000
+    volumes:
+      - ./client/src:/opt/client/src:cached
+    environment:
+      - VITE_GA_ID=G-HEBBBVZWZ5
+    restart: always
+    depends_on:
+      - server
+  mongo_express:
+    image: mongo-express:0.54.0
+    container_name: mongo_express
+    depends_on:
+        - mongo
+    ports:
+        - 8081:8081
+    restart: always
+    

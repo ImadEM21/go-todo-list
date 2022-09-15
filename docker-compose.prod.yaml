@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: todo_list_api
+    ports:
+      - 3000:3000
+    environment:
+      - PORT=3000
+    depends_on:
+      - mongo
+    volumes:
+      - ./server/static:/server/static
+    restart: always
+  mongo:
+    image: mongo:4.4.3
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./server//db:/data/db
+    restart: always
+  front:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: todo_list
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - VITE_GA_ID=G-HEBBBVZWZ5
+    restart: always
+    depends_on:
+      - server
+    
