@@ -6,8 +6,8 @@ ENV VITE_GA_ID=G-HEBBBVZWZ5
 
 RUN npm install -g pnpm
 
-COPY package.json .
-COPY pnpm-lock.yaml .
+COPY package.json /app/
+COPY pnpm-lock.yaml /app/
 
 RUN pnpm install
 
@@ -17,11 +17,11 @@ RUN pnpm run build
 
 RUN pnpm run sitemap
 
-COPY images/ app/dist/
+COPY images /app/dist/
 
 # stage2 - build the final image and copy the react build files
 FROM nginx:latest
-COPY --from=BUILD /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx/nginx.conf /etc/nginx/conf.d
-ENTRYPOINT nginx -g 'daemon off;'
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
